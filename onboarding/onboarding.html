@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Set Up Your Planner</title>
+<link rel="manifest" href="../manifest.json">
+<meta name="theme-color" content="#0a0c12">
+<link rel="apple-touch-icon" href="../icons/apple-touch-icon.png">
+<link rel="icon" href="../icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400..700&family=Geist+Mono:wght@500..600&display=swap">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<main class="obm">
+ <h1>Let's build your plan</h1>
+ <p class="mute" id="stp"></p>
+ <div class="bar"><i id="pg"></i></div>
+ <div class="card">
+  <h2 id="q"></h2>
+  <p class="mute" id="hint" style="margin-top:4px"></p>
+  <div id="ans"></div>
+ </div>
+ <div class="row"><button id="bk">Back</button><button id="nx" class="pri">Next</button></div>
+ <p class="ob-imp" id="impw"><button type="button" class="link" id="imp">Have a backup file? Import it</button></p>
+ <input type="file" id="impf" accept=".json,application/json" hidden>
+</main>
+<script src="onboarding.js"></script>
+</body>
+</html>
