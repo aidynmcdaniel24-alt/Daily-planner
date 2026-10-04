@@ -1,7 +1,7 @@
 // ===== Offline support =====
 // Saves the app's own files so it opens fast and works without internet.
 // Change the version number when you update files, so phones get the new ones.
-const CACHE = "planner-v13";
+const CACHE = "planner-v14";
 const FILES = [
   "./", "./index.html", "./style.css", "./script.js", "./genres.js", "./content.js", "./extras.js", "./timepicker.js", "./sync.js", "./firebase.js", "./ai.js", "./remote.js",
   "./login/login.html", "./login/login.js",
@@ -21,18 +21,17 @@ self.addEventListener("activate", function (e) {
   }).then(function () { return self.clients.claim(); }));
 });
 
-// Our own files: show the saved copy right away, then update it in the background.
-// Everything else (Firebase, fonts): always go to the internet.
+// Our own files: always try the internet first so everyone gets the newest version
+// (mixing old and new files breaks the app). Use the saved copy only when offline.
 self.addEventListener("fetch", function (e) {
   const url = new URL(e.request.url);
   if (e.request.method !== "GET" || url.origin !== location.origin) return;
-  e.respondWith(caches.open(CACHE).then(function (c) {
-    return c.match(e.request, { ignoreSearch: true }).then(function (hit) {
-      const net = fetch(e.request).then(function (res) {
-        if (res.ok) c.put(e.request, res.clone());
-        return res;
-      }).catch(function () { return hit; });
-      return hit || net;
-    });
-  }));
+  e.respondWith(
+    fetch(e.request, { cache: "no-cache" }).then(function (res) {
+      if (res.ok) { const copy = res.clone(); caches.open(CACHE).then(function (c) { c.put(e.request, copy); }); }
+      return res;
+    }).catch(function () {
+      return caches.match(e.request, { ignoreSearch: true }).then(function (hit) { return hit || caches.match("./index.html"); });
+    })
+  );
 });
