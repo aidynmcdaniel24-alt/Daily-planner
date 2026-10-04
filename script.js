@@ -166,8 +166,10 @@ function greet(){$("sb").textContent=st.nm?"Hi "+st.nm+". "+(st.gl?"Goal: "+st.g
 // ===== Header buttons =====
 // ===== Start =====
 load();
-if(!st.acct)location.replace("login/login.html");
-else if(!st.done&&!st.nm&&!st.sk)location.replace("onboarding/onboarding.html");
+var setUp=st.done||st.nm||st.sk;
+// No account choice yet, or a guest who left before finishing setup: back to the sign-in page
+if(!st.acct||(st.acct==="guest"&&!setUp))location.replace("login/login.html");
+else if(!setUp)location.replace("onboarding/onboarding.html");
 setInterval(function(){setQ()},60000);
 if(st.th)th(st.th);
 $("fg").value=(st.fg||{})[td()]||"";

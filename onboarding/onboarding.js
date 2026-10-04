@@ -7,6 +7,7 @@ function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;
 if(st.th)document.documentElement.style.setProperty("--acc",st.th);
 if(st.md&&st.md!=="auto")document.documentElement.setAttribute("data-theme",st.md);
 
+if(!st.acct)location.replace("../login/login.html");
 var a=st.ob||{},i=0;
 function has(g){return(a.goals||[]).indexOf(g)>-1}
 function hasWk(w){return(a.wk||[]).indexOf(w)>-1}
