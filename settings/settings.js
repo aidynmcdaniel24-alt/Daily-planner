@@ -22,15 +22,21 @@ $("snd").onclick=function(e){var b=e.target.closest("button");if(b){st.snd=b.dat
 $("th").onclick=function(e){var b=e.target.closest("button");if(b){st.th=b.dataset.c;th(b.dataset.c);save();drawTh()}};drawTh();
 
 // ===== Game and full days =====
-function matchGame(t){var s=String(t||"").toLowerCase().replace(/[^a-z0-9]/g,"");
- if(s.indexOf("apex")>-1)return"Apex Legends";
- if(s.indexOf("fortnite")>-1)return"Fortnite";
- if(s.indexOf("valo")>-1)return"Valorant";
- if(s.indexOf("counterstrike")>-1||s.indexOf("csgo")>-1||s==="cs"||s.indexOf("cs2")>-1)return"CS2";
- return"Another game"}
 var DAYS=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
-$("gm").value=st.gn||st.gm||"";
-$("gm").oninput=function(){var v=$("gm").value.trim();st.gn=v;st.gm=matchGame(v);save()};
+$("gm").value=st.gn||(st.gm&&st.gm!=="Another game"?st.gm:"");
+$("gt").innerHTML=GENRE_ORDER.map(function(g){return'<option value="'+g+'">'+GENRES[g].name+"</option>"}).join("");
+$("gt").value=genreId(st);
+function gameStatus(){var g=genreOf(st);$("gst").textContent=g.ai?"Using a custom AI plan for "+g.game+".":"Using the built-in plan for this game type."}
+var aiTimer,aiFor="";
+function askAI(){var v=st.gn||"";if(!window.AI||!v||normGame(v)===aiFor)return;
+ var mine=aiFor=normGame(v);$("gst").textContent="Making a custom plan for "+v+"\u2026";
+ window.AI.gamePlan(v).then(function(r){if(mine!==normGame(st.gn||""))return;
+  if(r){st.gp=r;st.gg=r.g;$("gt").value=r.g;save()}gameStatus()})}
+window.addEventListener("ai-ready",gameStatus);
+$("gm").oninput=function(){var v=$("gm").value.trim(),d=detectGame(v);st.gn=v;st.gm=d.k||"Another game";delete st.gg;$("gt").value=genreId(st);save();gameStatus();
+ clearTimeout(aiTimer);aiTimer=setTimeout(askAI,1200)};
+$("gt").onchange=function(){st.gg=$("gt").value;save();gameStatus()};
+gameStatus();
 function drawFd(){$("fd").innerHTML=DAYS.map(function(n,i){return'<button data-i="'+i+'" aria-pressed="'+((st.fd||[0,1,2]).indexOf(i)>-1)+'">'+n+"</button>"}).join("")}
 $("fd").onclick=function(e){var b=e.target.closest("button");if(!b)return;var a=(st.fd||[0,1,2]).slice(),i=+b.dataset.i,p=a.indexOf(i);
  if(p>-1)a.splice(p,1);else a.push(i);st.fd=a;save();drawFd()};

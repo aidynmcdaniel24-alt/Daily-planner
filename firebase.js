@@ -1,66 +1,6 @@
-// ===== FIREBASE SETUP (do these once) =====
-// 1. Go to console.firebase.google.com and click "Create a project". Skip Analytics.
-// 2. Build > Authentication > Get started. Turn on "Email/Password" and "Google".
-// 3. Authentication > Settings > Authorized domains > Add "127.0.0.1" (for Live Server).
-// 4. Build > Firestore Database > Create database > pick "production mode".
-// 5. Firestore > Rules tab > replace everything with this, then click Publish:
-//
-//    rules_version = '2';
-//    service cloud.firestore {
-//      match /databases/{database}/documents {
-//        function signedIn() { return request.auth != null; }
-//        function isMe(id) { return signedIn() && request.auth.uid == id; }
-//
-//        match /users/{userId} {
-//          allow read, delete: if isMe(userId);
-//          allow create, update: if isMe(userId)
-//            && request.resource.data.keys().hasOnly(['data', 'updated', 'epoch'])
-//            && (!('data' in request.resource.data) || (request.resource.data.data is string
-//                && request.resource.data.data.size() < 500000))
-//            && (!('epoch' in request.resource.data) || request.resource.data.epoch is int)
-//            && request.resource.data.updated == request.time;
-//
-//          match /logins/{id} {
-//            allow read, delete: if isMe(userId);
-//            allow create: if isMe(userId)
-//              && request.resource.data.keys().hasOnly(['device', 'time'])
-//              && request.resource.data.device is string && request.resource.data.device.size() <= 60
-//              && request.resource.data.time == request.time;
-//          }
-//        }
-//
-//        match /board/{userId} {
-//          allow read: if signedIn();
-//          allow delete: if isMe(userId);
-//          allow create, update: if isMe(userId)
-//            && request.resource.data.keys().hasOnly(['name', 'code', 'streak', 'best', 'updated'])
-//            && request.resource.data.name is string && request.resource.data.name.size() > 0
-//            && request.resource.data.name.size() <= 24
-//            && request.resource.data.code is string && request.resource.data.code.size() == 6
-//            && request.resource.data.streak is int && request.resource.data.streak >= 0
-//            && request.resource.data.best is int && request.resource.data.best >= request.resource.data.streak
-//            && request.resource.data.best <= 3650
-//            && request.resource.data.updated == request.time;
-//        }
-//
-//        match /nudges/{toId}/in/{fromId} {
-//          allow read, delete: if isMe(toId);
-//          allow create: if isMe(fromId) && fromId != toId
-//            && request.resource.data.keys().hasOnly(['name', 'time'])
-//            && request.resource.data.name is string && request.resource.data.name.size() > 0
-//            && request.resource.data.name.size() <= 24
-//            && request.resource.data.time == request.time;
-//          allow update: if isMe(fromId) && fromId != toId
-//            && request.resource.data.keys().hasOnly(['name', 'time'])
-//            && request.resource.data.name is string && request.resource.data.name.size() <= 24
-//            && request.resource.data.time == request.time
-//            && request.time > resource.data.time + duration.value(12, 'h');
-//        }
-//      }
-//    }
-//
-// 6. Gear icon > Project settings > Your apps > click the </> (Web) icon > register.
-// 7. Copy the 4 values from "firebaseConfig" into the box below.
+// ===== FIREBASE SETUP =====
+// Your database rules live in firestore.rules. When that file changes, copy all of it into
+// Firebase > Firestore > Rules, then click Publish.
 
 const firebaseConfig = {
   apiKey: "AIzaSyDCrg9rC3A_AFBqrYNDYLy3PwH5Y2MxvpA",
@@ -69,13 +9,23 @@ const firebaseConfig = {
   appId: "1:204598190100:web:bf3a3021be31bc0a514701"
 };
 
+// ===== App Check (blocks bots) =====
+// Paste your reCAPTCHA v3 SITE key here. Leave "PASTE_HERE" to turn App Check off.
+const APP_CHECK_KEY = "PASTE_HERE";
+
 // ===== You don't need to change anything below =====
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, getDoc, setDoc, addDoc, getDocs, deleteDoc, collection, query, orderBy, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
+import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app-check.js";
+import { getAuth } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc, addDoc, getDocs, deleteDoc, collection, query, orderBy, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 
 export const ready = firebaseConfig.apiKey !== "PASTE_HERE";
 export const app = initializeApp(firebaseConfig);
+if (APP_CHECK_KEY !== "PASTE_HERE") {
+  // On Live Server, App Check prints a "debug token" in the console (F12). Add it in Firebase > App Check > Manage debug tokens.
+  if (location.hostname === "127.0.0.1" || location.hostname === "localhost") self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
+  initializeAppCheck(app, { provider: new ReCaptchaV3Provider(APP_CHECK_KEY), isTokenAutoRefreshEnabled: true });
+}
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 
@@ -169,4 +119,36 @@ export async function takeNudges(uid) {
   const names = snap.docs.map(function (d) { return d.data().name; });
   await Promise.all(snap.docs.map(function (d) { return deleteDoc(d.ref); }));
   return names;
+}
+
+// ===== Name filter (for names other people can see) =====
+// Words matched anywhere in the name (long or unusual enough to not cause false matches)
+const BAD_ANY = ["fuck","shit","bitch","cunt","nigg","fagg","dick","pussy","whore","slut","bastard","retard","rape","porn",
+  "kike","spic","chink","tranny","nazi","hitler","cock","twat","wank","jizz","cum","dildo","penis","vagina","boob","titt"];
+// Words only blocked when they stand alone (they appear inside normal words, like "class")
+const BAD_WORD = ["ass","fag","hoe","tit","sex","kys","gay","homo","dyke","coon","gook","wetback","jap"];
+const SAFE = ["scunthorpe","cocktail","cockpit","peacock","hancock","dickens","cumulative","document","circumstance","therapist","grape","drape","sussex"];
+function normalize(s) {
+  return s.toLowerCase().replace(/[013457@$!|]/g, function (c) { return { "0": "o", "1": "i", "3": "e", "4": "a", "5": "s", "7": "t", "@": "a", "$": "s", "!": "i", "|": "i" }[c]; });
+}
+// Returns a message if the name isn't allowed, or "" if it's fine
+export function nameProblem(name) {
+  const n = String(name || "").trim();
+  if (!n) return "Type a name.";
+  if (n.length > 24) return "Names can be up to 24 characters.";
+  if (!/^[\p{L}\p{N} ._'-]+$/u.test(n)) return "Use letters, numbers, spaces, and . _ ' - only.";
+  let flat = normalize(n).replace(/[^a-z]/g, "");
+  SAFE.forEach(function (w) { flat = flat.split(w).join(""); });
+  const words = normalize(n).split(/[^a-z]+/).filter(Boolean);
+  let extra = [];
+  try { extra = ((JSON.parse(localStorage.getItem("apexcontent") || "{}").data || {}).blocked || []).map(function (w) { return normalize(String(w)).replace(/[^a-z]/g, ""); }).filter(Boolean); } catch (e) {}
+  if (extra.some(function (w) { return flat.indexOf(w) > -1; })) return "That name isn't allowed. Please pick another.";
+  if (BAD_ANY.some(function (w) { return flat.indexOf(w) > -1; }) || words.some(function (w) { return BAD_WORD.indexOf(w) > -1; }))
+    return "That name isn't allowed. Please pick another.";
+  return "";
+}
+
+// ===== Feedback =====
+export async function sendFeedback(uid, type, text, page) {
+  await addDoc(collection(db, "feedback"), { uid: uid, type: type, text: text, page: page, time: serverTimestamp() });
 }

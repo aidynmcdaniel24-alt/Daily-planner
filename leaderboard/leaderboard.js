@@ -1,7 +1,7 @@
 // ===== Friends leaderboard =====
-import { auth, db, ready, getLocal, setLocal, push, getBoard, updateBoard, sendNudge } from "../firebase.js";
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { collection, query, where, getDocs, doc, deleteDoc, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { auth, db, ready, getLocal, setLocal, push, getBoard, updateBoard, sendNudge, nameProblem } from "../firebase.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
+import { collection, query, where, getDocs, doc, deleteDoc, limit } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 
 const $ = function (id) { return document.getElementById(id); };
 let st = getLocal(), uid = null;
@@ -35,7 +35,8 @@ function showJoin() {
     try {
       let code = newCode();
       while (await findCode(code)) code = newCode();
-      const name = (st.nm || (auth.currentUser.displayName || "").split(" ")[0] || "Player").slice(0, 24);
+      let name = (st.nm || (auth.currentUser.displayName || "").split(" ")[0] || "Player").slice(0, 24);
+      if (nameProblem(name)) name = "Player";
       st.lb = { code: code, name: name, fr: [] };
       save();
       await updateBoard(uid, st);
@@ -116,6 +117,10 @@ $("dn").oninput = function () {
   clearTimeout(nt);
   nt = setTimeout(function () {
     const v = $("dn").value.trim().slice(0, 24); if (!v) return;
+    const bad = nameProblem(v);
+    $("dn").setAttribute("aria-invalid", bad ? "true" : "false");
+    $("dne").hidden = !bad; $("dne").textContent = bad;
+    if (bad) return;
     st.lb.name = v; save(); updateBoard(uid, st).then(render).catch(function () {});
   }, 800);
 };

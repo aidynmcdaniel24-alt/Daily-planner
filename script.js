@@ -5,18 +5,22 @@ function load(){try{st=JSON.parse(localStorage.getItem("apexplan")||"{}")}catch(
 function save(){st.ts=Date.now();try{localStorage.setItem("apexplan",JSON.stringify(st))}catch(e){}if(window.cloudSave)window.cloudSave(st)}
 
 // ===== Games and checklists =====
-var GM={"Apex Legends":["Strafetrack + AR recoil","Smoothbot or Orbit + SMG recoil","Spidershot + moving dummy","Strafetrack 5 min + recoil 5 min"],"Fortnite":["Tracking for AR fights","Flick shots for shotguns","Box fights and edits","Tracking 5 min + box fights 5 min"],"Valorant":["Crosshair placement + tracking","Flicking + counter-strafing","Spray control + peeking","Headshot drills 10 min"],"CS2":["Spray control","Flicks + counter-strafing","Prefire + crosshair placement","Spray + flicks 10 min"],"Another game":["Tracking drills","Flick drills","Movement + aim mix","Warm-up drills 10 min"]};
 var foc="";
 var DEF={
  sleep:[["Pick tonight's bedtime","Same time as work allows"],["No ranked in the last hour","Wind down instead"],["Screens off 30-60 min before bed","Dim lights, stretch"],["Skip late caffeine","Water instead"],["Wake at your set time","No snooze spiral"]],
  coding:[["Study 20-45 min","CS50, freeCodeCamp, or The Odin Project"],["Build or fix one small thing","Even a tiny script counts"],["Add a line to your learning log","Below on this tab"],["Push your work to GitHub","If you made something today"]]};
-function build(){var g=GM[st.gm]||GM["Apex Legends"],full=(st.fd||[0,1,2]).indexOf(W)>-1,P=st.plan;
- if(P&&P.drills&&P.drills.length)foc=full?P.drills[W%P.drills.length]:P.drills[0];else foc=full?g[W%3]:g[3];
- if(P&&P.full){DEF.gaming=(full?P.full:P.short).map(function(t){return[t[0],t[1]==="@foc"?foc:t[1]]});return}
- DEF.gaming=full?[["Wake up at your set time","Water and food first"],["Tech learning, 45 min","Check the Coding tab"],["Aim training, 15 min",foc],["Ranked block 1, 60-90 min","Bring your focus goal into every fight"],["Break, 15 min","Walk, water, no screen"],["Ranked block 2, 60-90 min","Stop early on the 2-loss rule"],["Review one loss, 15 min","Watch at 1.5-2x, write one fix"]]:[["Aim warm-up, 10 min",foc],["Tech learning, 20-30 min","Even a little keeps the streak"],["One ranked block, 60 min","Only if you have time"],["Write one fix","Quick note, then done"]]}
+function build(){var G=genreOf(st),gid=genreId(st),full=(st.fd||[0,1,2]).indexOf(W)>-1,P=st.plan,
+  rot=GAME_FOCUS[st.gm]&&gid==="fps"?GAME_FOCUS[st.gm]:G.drills.slice(0,3).map(function(d){return d.name}).concat([G.warm]);
+ var samePlan=P&&(P.gg||"fps")===gid;
+ if(samePlan&&P.drills&&P.drills.length)foc=full?P.drills[W%P.drills.length]:P.drills[0];else foc=full?rot[W%3]:rot[3];
+ function words(t){return String(t).replace("@skill",G.skill).replace("@play",G.play).replace("Aim training",G.skill).replace("Aim warm-up",G.skill+" warm-up").replace("Ranked block",G.play)}
+ if(P&&P.full){DEF.gaming=(full?P.full:P.short).map(function(t){return[words(t[0]),t[1]==="@foc"?foc:t[1]==="@rev"?G.review:t[1]]});return}
+ DEF.gaming=full?[["Wake up at your set time","Water and food first"],["Tech learning, 45 min","Check the Coding tab"],[G.skill+", 15 min",foc],[G.play+" 1, 60-90 min","Bring your focus goal into every game"],["Break, 15 min","Walk, water, no screen"],[G.play+" 2, 60-90 min","Stop early on the 2-loss rule"],["Review one game, 15 min",G.review]]:[[G.skill+" warm-up, 10 min",foc],["Tech learning, 20-30 min","Even a little keeps the streak"],[G.play+", 60 min","Only if you have time"],["Write one fix","Quick note, then done"]]}
+function gameWords(){var G=genreOf(st);
+ $("sl1").textContent=G.scores[0];$("sl2").textContent=G.scores[1];$("sl3").textContent=G.scores[2];$("fg").placeholder=G.ph}
 function TK(c){return(st.ct&&st.ct[c])||DEF[c]}
 function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
-function setFc(){$("fc").textContent="Aim focus today: "+foc}
+function setFc(){$("fc").textContent=genreOf(st).focus+" today: "+foc}
 function upd(c){var n=TK(c).length,k=((st.dn||{})[td()+c]||[]).length;
  $("pc-"+c).textContent=k+"/"+n+" done";$("pb-"+c).style.width=(n?100*k/n:0)+"%";
  st.ok=st.ok||{};if(n>0&&k===n)st.ok[c+td()]=1;else delete st.ok[c+td()];
@@ -77,7 +81,7 @@ var cc;$("tx2").onclick=function(){var b=$("tx2");if(b.dataset.arm){st.tl=[];sav
 function sp(a,col){if(a.length<2)return"";var mn=Math.min.apply(0,a),mx=Math.max.apply(0,a),r=mx-mn||1;
  return '<polyline fill="none" stroke="'+col+'" stroke-width="3" stroke-linejoin="round" points="'+a.map(function(v,i){return(10+i*280/(a.length-1)).toFixed(1)+","+(60-(v-mn)/r*50).toFixed(1)}).join(" ")+'"/>'}
 function chart(){var s=(st.sc||[]).slice(-14);
- $("ch").innerHTML=s.length<2?'<p class="mute">Save scores on 2 or more days to see a chart.</p>':'<svg viewBox="0 0 300 70" width="100%" role="img" aria-label="Score history">'+sp(s.map(function(x){return x.a}),"var(--acc)")+sp(s.map(function(x){return x.b}),"var(--hot)")+'</svg><p class="mute">Purple: Strafetrack. Orange: Gridshot.</p>'}
+ $("ch").innerHTML=s.length<2?'<p class="mute">Save scores on 2 or more days to see a chart.</p>':'<svg viewBox="0 0 300 70" width="100%" role="img" aria-label="Score history">'+sp(s.map(function(x){return x.a}),"var(--acc)")+sp(s.map(function(x){return x.b}),"var(--hot)")+'</svg><p class="mute">Purple: '+esc(genreOf(st).scores[0])+'. Orange: '+esc(genreOf(st).scores[1])+'.</p>'}
 $("ss").onclick=function(){st.sc=(st.sc||[]).filter(function(x){return x.d!==td()});
  st.sc.push({d:td(),a:+$("s1").value||0,b:+$("s2").value||0,c:+$("s3").value||0});save();chart()};
 
@@ -99,12 +103,8 @@ function th(c){document.documentElement.style.setProperty("--acc",c)}
 function lk(v){var r=document.documentElement;if(!v||v==="auto")r.removeAttribute("data-theme");else r.setAttribute("data-theme",v)}
 
 // ===== Quotes (changes every hour) =====
-var Q=[["It does not matter how slowly you go as long as you do not stop.","Confucius"],["The journey of a thousand miles begins with a single step.","Lao Tzu"],["Well done is better than well said.","Benjamin Franklin"],["Genius is one percent inspiration and ninety-nine percent perspiration.","Thomas Edison"],["The best way to predict the future is to invent it.","Alan Kay"],["Talk is cheap. Show me the code.","Linus Torvalds"],["The only way to do great work is to love what you do.","Steve Jobs"],["You miss 100% of the shots you don't take.","Wayne Gretzky"],["Success is the sum of small efforts, repeated day in and day out.","Robert Collier"]];
-var V=[["I can do all things through Christ which strengtheneth me.","Philippians 4:13 (KJV)"],["Be strong and of a good courage; be not afraid, neither be thou dismayed…","Joshua 1:9 (KJV)"],["Trust in the LORD with all thine heart; and lean not unto thine own understanding.","Proverbs 3:5 (KJV)"],["They that wait upon the LORD shall renew their strength…","Isaiah 40:31 (KJV)"],["Let us not be weary in well doing: for in due season we shall reap, if we faint not.","Galatians 6:9 (KJV)"],["Whatsoever thy hand findeth to do, do it with thy might…","Ecclesiastes 9:10 (KJV)"],["A soft answer turneth away wrath…","Proverbs 15:1 (KJV)"],["He that is slow to anger is better than the mighty…","Proverbs 16:32 (KJV)"],["God hath not given us the spirit of fear; but of power, and of love, and of a sound mind.","2 Timothy 1:7 (KJV)"]];
-function setQ(){var m=st.qm||"mix",h=Math.floor(Date.now()/3600000),p=m==="moti"?Q:m==="faith"?V:[];
- if(m==="mix")for(var i=0;i<Math.max(Q.length,V.length);i++){if(Q[i])p.push(Q[i]);if(V[i])p.push(V[i])}
- [].forEach.call(document.querySelectorAll("#qm button"),function(b){b.setAttribute("aria-pressed",b.dataset.m===m)});
- var it=p[h%p.length];$("qt").textContent="\u201C"+it[0]+"\u201D";$("qa").textContent="\u2014 "+it[1]}
+// The real quote code is in extras.js (it uses the live content list)
+function setQ(){}
 $("qm").onclick=function(e){var b=e.target.closest("button");if(b){st.qm=b.dataset.m;save();setQ()}};
 
 // ===== Editing tasks =====
@@ -134,7 +134,7 @@ function cnt(c){var n=0;for(var i=0;i<7;i++)if((st.ok||{})[c+td(i)])n++;return n
 function sumry(){weekly();var a=(st.tl||[]).filter(function(x){return x[0]>=td(6)}),calm=a.filter(function(x){return x[1]==="c"}).length,hs=[],nt=0,s=st.sl||{};
  for(var i=0;i<7;i++){var e=s[td(i)],h=e?hrs(e.b,e.w):null;if(h){hs.push(h);if(h>=7)nt++}}
  var avg=hs.length?(hs.reduce(function(x,y){return x+y},0)/hs.length).toFixed(1)+" h":"no data yet",sc=(st.sc||[]).slice(-1)[0],mx=Math.max(sk("gaming"),sk("sleep"),sk("coding")),cl=(st.tc||[]).length;
- $("sm").innerHTML=[["Checklists finished (7 days)","Gaming "+cnt("gaming")+", Sleep "+cnt("sleep")+", Coding "+cnt("coding")],["Current streaks","Gaming "+sk("gaming")+", Sleep "+sk("sleep")+", Coding "+sk("coding")],["Sessions (7 days)","Calm "+calm+", Tilted "+(a.length-calm)],["Average sleep",avg],["Latest scores",sc?"Strafetrack "+sc.a+", Gridshot "+sc.b+", Damage "+sc.c:"none yet"]].map(function(r){return"<p><b>"+r[0]+":</b> "+esc(r[1])+"</p>"}).join("");
+ $("sm").innerHTML=[["Checklists finished (7 days)","Gaming "+cnt("gaming")+", Sleep "+cnt("sleep")+", Coding "+cnt("coding")],["Current streaks","Gaming "+sk("gaming")+", Sleep "+sk("sleep")+", Coding "+sk("coding")],["Sessions (7 days)","Calm "+calm+", Tilted "+(a.length-calm)],["Average sleep",avg],["Latest scores",sc?genreOf(st).scores[0]+" "+sc.a+", "+genreOf(st).scores[1]+" "+sc.b+", "+genreOf(st).scores[2]+" "+sc.c:"none yet"]].map(function(r){return"<p><b>"+r[0]+":</b> "+esc(r[1])+"</p>"}).join("");
  $("bg").innerHTML=[["3-day streak",mx>=3],["7-day streak",mx>=7],["5 calm sessions",calm>=5],["3 nights of 7+ hours",nt>=3],["First coding log",cl>=1],["10 coding logs",cl>=10]].map(function(b){return'<span class="bd'+(b[1]?" on":"")+'">'+(b[1]?"\u2713 ":"")+b[0]+"</span>"}).join("")}
 
 // ===== Weekly charts =====
@@ -168,13 +168,13 @@ function greet(){$("sb").textContent=st.nm?"Hi "+st.nm+". "+(st.gl?"Goal: "+st.g
 load();
 if(!st.acct)location.replace("login/login.html");
 else if(!st.done&&!st.nm&&!st.sk)location.replace("onboarding/onboarding.html");
-setQ();setInterval(setQ,60000);
+setInterval(function(){setQ()},60000);
 if(st.th)th(st.th);
 $("fg").value=(st.fg||{})[td()]||"";
 $("r1").value=st.r1||"";$("r2").value=st.r2||"";
 var ds=(st.sc||[]).slice(-1)[0];if(ds&&ds.d===td()){$("s1").value=ds.a;$("s2").value=ds.b;$("s3").value=ds.c}
 var sl=(st.sl||{})[td()];if(sl){$("bt").value=sl.b||"";$("wt").value=sl.w||""}
-build();setFc();["gaming","sleep","coding"].forEach(tasks);["gaming","sleep","coding"].forEach(mkEd);lk(st.md);greet();rem();setInterval(rem,60000);tilt();chart();slp();tlog();tm();show("gaming");
+build();gameWords();setFc();["gaming","sleep","coding"].forEach(tasks);["gaming","sleep","coding"].forEach(mkEd);lk(st.md);greet();rem();setInterval(rem,60000);tilt();chart();slp();tlog();tm();show("gaming");
 [["bt","22:00"],["wt","07:00"]].forEach(function(p){tp($(p[0]),p[1])});
 
 // ===== Quick tour (shows once after setup) =====

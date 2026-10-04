@@ -1,6 +1,6 @@
 // ===== Login and sign up =====
 import { auth, ready, syncDown, getLocal, setLocal, markLogin, recordLogin } from "../firebase.js";
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, sendPasswordResetEmail, sendEmailVerification, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, sendPasswordResetEmail, sendEmailVerification, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
 
 const $ = function (id) { return document.getElementById(id); };
 let mode = "in", busy = false;

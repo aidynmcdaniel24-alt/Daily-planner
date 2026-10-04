@@ -3,7 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Daily Planner</title>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://apis.google.com https://www.google.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.googleusercontent.com https://www.gstatic.com; connect-src 'self' https://bible-api.com https://*.googleapis.com https://*.firebaseio.com https://www.google.com https://apis.google.com; frame-src https://daily-planner-8801e.firebaseapp.com https://accounts.google.com https://www.google.com https://apis.google.com; manifest-src 'self'; worker-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'">
+<title>Today</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0a0c12">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -13,6 +14,7 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
+<div class="titlebar" aria-hidden="true"><span>Daily Planner</span></div>
 <main>
 <header class="top">
  <div><h1>Daily Planner</h1><p class="sub" id="sb">Gaming, sleep, and coding in one place.</p></div>
@@ -42,10 +44,10 @@
  <div class="card"><h2>Tilt tracker</h2><p class="mute">Log how each session went.</p>
   <div class="row"><button id="tc">Stayed calm</button><button id="tt">Tilted</button><button id="tu">Undo last</button><button id="tx2">Clear all</button></div><p class="mute" id="tls" style="margin-top:10px"></p>
   <div class="rule" id="tb" hidden style="margin:10px 0 0">Two tilted sessions in a row. Time for a 10 minute break. <button type="button" class="link" id="tbs">Start break</button></div></div>
- <div class="card"><h2>Score tracker</h2><p class="mute">Log your bests and watch them climb.</p>
-  <div class="grid"><div><label class="l" for="s1">Strafetrack best</label><input id="s1" type="number" inputmode="numeric"></div>
-  <div><label class="l" for="s2">Gridshot best</label><input id="s2" type="number" inputmode="numeric"></div>
-  <div class="full"><label class="l" for="s3">Avg damage per game</label><input id="s3" type="number" inputmode="numeric"></div></div>
+ <div class="card"><h2>Score tracker</h2><p class="mute">Log your numbers and watch your progress.</p>
+  <div class="grid"><div><label class="l" for="s1" id="sl1">Score 1</label><input id="s1" type="number" inputmode="decimal" step="any"></div>
+  <div><label class="l" for="s2" id="sl2">Score 2</label><input id="s2" type="number" inputmode="decimal" step="any"></div>
+  <div class="full"><label class="l" for="s3" id="sl3">Score 3</label><input id="s3" type="number" inputmode="decimal" step="any"></div></div>
   <div class="row"><button id="ss">Save scores</button></div><div id="ch" style="margin-top:12px"></div></div>
  <div class="card"><div class="head"><h2>Rank tracker</h2></div>
   <p class="rkc" id="rkc"></p>
@@ -93,10 +95,13 @@
 </main>
 <button type="button" class="pri fx" id="fx" hidden>Exit focus mode</button>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
+<script src="genres.js"></script>
 <script src="timepicker.js"></script>
 <script src="script.js"></script>
 <script src="content.js"></script>
 <script src="extras.js"></script>
 <script type="module" src="sync.js"></script>
+<script type="module" src="remote.js"></script>
+<script type="module" src="ai.js"></script>
 </body>
 </html>

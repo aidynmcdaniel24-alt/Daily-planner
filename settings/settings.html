@@ -3,7 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Settings · Daily Planner</title>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://apis.google.com https://www.google.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.googleusercontent.com https://www.gstatic.com; connect-src 'self' https://bible-api.com https://*.googleapis.com https://*.firebaseio.com https://www.google.com https://apis.google.com; frame-src https://daily-planner-8801e.firebaseapp.com https://accounts.google.com https://www.google.com https://apis.google.com; manifest-src 'self'; worker-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'">
+<title>Settings</title>
 <link rel="manifest" href="../manifest.json">
 <meta name="theme-color" content="#0a0c12">
 <link rel="apple-touch-icon" href="../icons/apple-touch-icon.png">
@@ -13,6 +14,7 @@
 <link rel="stylesheet" href="../style.css">
 </head>
 <body>
+<div class="titlebar" aria-hidden="true"><span>Daily Planner</span></div>
 <main>
 <button type="button" class="back" id="bk">
  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
@@ -34,7 +36,10 @@
 
 <div class="card">
  <h2>Game and schedule</h2>
- <label class="l" for="gm" style="margin-top:14px">Your game</label><input type="text" id="gm" maxlength="40" placeholder="Example: Apex Legends">
+ <label class="l" for="gm" style="margin-top:14px">Your game</label><input type="text" id="gm" maxlength="40" placeholder="Example: Apex, chess, GeoGuessr">
+ <label class="l" for="gt" style="margin-top:12px">Game type</label><select id="gt"></select>
+ <p class="mute" style="margin:6px 0 0;font-size:13px">This picks your drills and score labels. Change it if we guessed wrong.</p>
+ <p class="mute" id="gst" role="status" style="margin:6px 0 0;font-size:13px"></p>
  <p class="l" style="margin:16px 0 0">Full days (longer routine)</p><div class="row" id="fd"></div>
 </div>
 
@@ -70,9 +75,13 @@
  <div class="row"><button id="rd">Redo setup</button><button id="rs" class="danger">Reset today's checklists</button></div>
  <input type="file" id="if" accept=".json,application/json" hidden>
 </div>
+<p class="legal-links"><a href="../legal/privacy.html">Privacy Policy</a> · <a href="../legal/terms.html">Terms of Use</a></p>
 </main>
+<script src="../genres.js"></script>
 <script src="../timepicker.js"></script>
 <script src="settings.js"></script>
 <script type="module" src="../sync.js"></script>
+<script type="module" src="../remote.js"></script>
+<script type="module" src="../ai.js"></script>
 </body>
 </html>

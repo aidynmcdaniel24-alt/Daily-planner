@@ -1,7 +1,7 @@
 // ===== Keeps the planner synced with your account =====
-import { auth, db, ready, push, syncDown, getLocal, kickAll, updateBoard, recentLogins, deleteLogins, takeNudges } from "./firebase.js";
-import { onAuthStateChanged, signOut, sendEmailVerification, deleteUser } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { doc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { auth, db, ready, push, syncDown, getLocal, kickAll, updateBoard, recentLogins, deleteLogins, takeNudges, sendFeedback } from "./firebase.js";
+import { onAuthStateChanged, signOut, sendEmailVerification, deleteUser } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
+import { doc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 
 const ac = document.getElementById("ac"), lo = document.getElementById("lo"), pf = document.getElementById("pf");
 const vb = document.getElementById("vb"), del = document.getElementById("del"), lout = document.getElementById("lout");
@@ -117,6 +117,7 @@ function buildMenu(opts) {
     if (a === "out") logout();
     if (a === "in") goLogin();
     if (a === "focus" && window.toggleFocus) window.toggleFocus(true);
+    if (a === "fb") openFeedback();
   };
   document.addEventListener("click", function (e) { if (!pf.contains(e.target)) toggle(false); });
   document.addEventListener("keydown", function (e) { if (e.key === "Escape") toggle(false); });
@@ -130,7 +131,7 @@ function showProfile(user) {
   buildMenu({
     name: name, sub: user.email || "",
     fill: function (el) { fillAvatar(el, user, name); },
-    items: (window.toggleFocus ? [["focus", "Focus mode"]] : []).concat([["lb", "Leaderboard"], ["set", "Settings"], ["out", "Log out"]])
+    items: (window.toggleFocus ? [["focus", "Focus mode"]] : []).concat([["lb", "Leaderboard"], ["set", "Settings"], ["fb", "Send feedback"], ["out", "Log out"]])
   });
 }
 
@@ -139,8 +140,39 @@ function showGuest() {
   buildMenu({
     name: s.nm || "Guest", sub: "Not signed in",
     fill: function (el) { el.classList.add("guest"); el.innerHTML = PERSON; },
-    items: (window.toggleFocus ? [["focus", "Focus mode"]] : []).concat(ready ? [["in", "Sign in to sync"], ["set", "Settings"]] : [["set", "Settings"]])
+    items: (window.toggleFocus ? [["focus", "Focus mode"]] : []).concat(ready ? [["in", "Sign in to sync"], ["set", "Settings"], ["fb", "Send feedback"]] : [["set", "Settings"], ["fb", "Send feedback"]])
   });
+}
+
+// ===== Send feedback =====
+const ISSUES = "https://github.com/aidynmcdaniel24-alt/Daily-planner/issues/new";
+function openFeedback() {
+  if (!auth.currentUser) { window.open(ISSUES, "_blank", "noopener"); return; }
+  const d = document.createElement("dialog");
+  d.className = "dlg";
+  d.innerHTML = '<form method="dialog" id="fbf"><h2>Send feedback</h2><p class="mute">Found a bug or have an idea? Tell me.</p>' +
+    '<div class="row" id="fbt" role="radiogroup" aria-label="Type"><button type="button" data-t="bug" aria-pressed="true">Bug</button><button type="button" data-t="idea" aria-pressed="false">Idea</button><button type="button" data-t="other" aria-pressed="false">Other</button></div>' +
+    '<label class="l" for="fbx" style="margin-top:14px">Your message</label><textarea id="fbx" maxlength="2000" required placeholder="What happened, or what would you like to see?"></textarea>' +
+    '<p class="err" id="fbe" hidden></p><div class="row"><button type="button" id="fbc">Cancel</button><button type="submit" class="pri" id="fbs">Send</button></div></form>';
+  document.body.appendChild(d);
+  let type = "bug";
+  d.querySelector("#fbt").onclick = function (e) {
+    const b = e.target.closest("button"); if (!b) return; type = b.dataset.t;
+    [].forEach.call(this.children, function (x) { x.setAttribute("aria-pressed", x === b); });
+  };
+  d.querySelector("#fbc").onclick = function () { d.close(); };
+  d.addEventListener("close", function () { d.remove(); });
+  d.querySelector("#fbf").onsubmit = async function (e) {
+    e.preventDefault();
+    const text = d.querySelector("#fbx").value.trim(), err = d.querySelector("#fbe"), btn = d.querySelector("#fbs");
+    if (!text) { err.hidden = false; err.textContent = "Type a message first."; return; }
+    btn.disabled = true; btn.textContent = "Sending…";
+    try {
+      await sendFeedback(auth.currentUser.uid, type, text, location.pathname.slice(-100));
+      d.querySelector("form").innerHTML = '<h2>Thanks!</h2><p class="mute">Your feedback was sent.</p><div class="row"><button type="submit" class="pri">Close</button></div>';
+    } catch (x) { btn.disabled = false; btn.textContent = "Send"; err.hidden = false; err.textContent = "Couldn't send. Check your internet and try again."; }
+  };
+  d.showModal(); d.querySelector("#fbx").focus();
 }
 
 // ===== Nudges and recent logins =====

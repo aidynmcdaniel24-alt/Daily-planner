@@ -1,15 +1,21 @@
 // ===== Extra features (runs after script.js and content.js) =====
 
 // ---------- Quotes by mood ----------
-Q.push.apply(Q, MORE_Q); V.push.apply(V, MORE_V);
 function mixLists(a, b) { var p = []; for (var i = 0; i < Math.max(a.length, b.length); i++) { if (a[i]) p.push(a[i]); if (b[i]) p.push(b[i]); } return p; }
 function setQ() {
-  var m = st.qm || "mix", mood = st.qmo || "any", h = Math.floor(Date.now() / 3600000), src = (mood !== "any" && MOODS[mood]) ? MOODS[mood] : { q: Q, v: V };
-  var p = m === "moti" ? src.q : m === "faith" ? src.v : mixLists(src.q, src.v);
+  var m = st.qm || "mix", mood = st.qmo || "any", h = Math.floor(Date.now() / 3600000);
+  var src = (mood !== "any" && CONTENT.moods[mood]) ? CONTENT.moods[mood] : { q: CONTENT.quotes, v: CONTENT.verses };
+  var verses = src.v.map(function (ref) { return { ref: ref }; }), quotes = src.q.map(function (q) { return { q: q }; });
+  var p = m === "moti" ? quotes : m === "faith" ? verses : mixLists(quotes, verses);
+  if (!p.length) p = quotes.length ? quotes : verses;
   [].forEach.call(document.querySelectorAll("#qm button"), function (b) { b.setAttribute("aria-pressed", b.dataset.m === m); });
   [].forEach.call(document.querySelectorAll("#qmo button"), function (b) { b.setAttribute("aria-pressed", b.dataset.o === mood); });
   var it = p[(h + (st.qsh || 0)) % p.length];
-  $("qt").textContent = "“" + it[0] + "”"; $("qa").textContent = "— " + it[1];
+  if (it.q) { $("qt").textContent = "\u201C" + it.q[0] + "\u201D"; $("qa").textContent = "\u2014 " + it.q[1]; return; }
+  var t = verseText(it.ref);
+  $("qt").textContent = t ? "\u201C" + t + "\u201D" : "Loading verse\u2026";
+  $("qa").textContent = "\u2014 " + it.ref + " (KJV)";
+  loadVerse(it.ref, setQ);
 }
 $("qmo").onclick = function (e) { var b = e.target.closest("button"); if (b) { st.qmo = b.dataset.o; st.qsh = 0; save(); setQ(); } };
 $("qnx").onclick = function () { st.qsh = (st.qsh || 0) + 1; save(); setQ(); };
@@ -17,9 +23,11 @@ setQ();
 
 // ---------- Drill guide ----------
 function drillFor(text) {
-  var t = String(text || "").toLowerCase();
-  for (var i = 0; i < DRILLS.length; i++) if (DRILLS[i].keys.some(function (k) { return t.indexOf(k) > -1; })) return DRILLS[i];
-  return DRILLS[0];
+  var L = genreOf(st).drills, t = String(text || "").toLowerCase();
+  for (var i = 0; i < L.length; i++) if (L[i].name.toLowerCase() === t) return L[i];
+  for (i = 0; i < L.length; i++) if ((L[i].keys || []).some(function (k) { return t.indexOf(k) > -1; })) return L[i];
+  for (i = 0; i < L.length; i++) if (t.indexOf(L[i].name.toLowerCase()) > -1) return L[i];
+  return L[0];
 }
 function drillHTML(d) {
   return '<div class="head"><b>' + esc(d.name) + '</b><span class="pill">' + esc(d.time) + '</span></div><ol class="steps">' +
@@ -28,7 +36,7 @@ function drillHTML(d) {
 function drills() {
   var today = drillFor(foc);
   $("dgt").innerHTML = drillHTML(today);
-  $("dga").innerHTML = DRILLS.filter(function (d) { return d !== today; }).map(function (d) { return '<div class="dgi">' + drillHTML(d) + "</div>"; }).join("");
+  $("dga").innerHTML = genreOf(st).drills.filter(function (d) { return d !== today; }).map(function (d) { return '<div class="dgi">' + drillHTML(d) + "</div>"; }).join("");
 }
 drills();
 
@@ -37,14 +45,41 @@ function projectList() {
   var cp = st.ob && st.ob.cp, want = cp === "py" ? "p" : cp === "web" ? "w" : null;
   return PROJECTS.filter(function (p) { return !want || p[0] === want; });
 }
+function aiIdea() { return st.pj && st.pj.d === td() && st.pj.list && st.pj.list.length ? st.pj.list[(st.pj.i || 0) % st.pj.list.length] : null; }
 function project() {
-  var L = projectList(), day = Math.floor(Date.now() / 86400000), off = (st.pio && st.pio.d === td()) ? st.pio.n : 0, p = L[(day + off) % L.length];
+  var p = aiIdea();
+  if (!p) { var L = projectList(), day = Math.floor(Date.now() / 86400000), off = (st.pio && st.pio.d === td()) ? st.pio.n : 0; p = L[(day + off) % L.length]; }
   $("pit").textContent = p[1];
   $("pid").textContent = p[2];
   $("pil").textContent = p[0] === "p" ? "Python" : "HTML, CSS, JS";
   $("pib").dataset.t = p[1];
 }
-$("pin").onclick = function () { var o = (st.pio && st.pio.d === td()) ? st.pio.n : 0; st.pio = { d: td(), n: o + 1 }; save(); project(); };
+function moreIdeas(done) {
+  if (!window.AI || !st.ob || !st.ob.goals || st.ob.goals.indexOf("code") < 0) { if (done) done(false); return; }
+  var built = (st.tc || []).map(function (x) { return x.t.replace(/^Built: /, ""); }).slice(-15);
+  var seen = (st.pj && st.pj.d === td() ? st.pj.list.map(function (x) { return x[1]; }) : []).concat(built);
+  window.AI.projects(st.ob.cl, st.ob.cp, seen).then(function (L) {
+    if (!L.length) { if (done) done(false); return; }
+    if (st.pj && st.pj.d === td()) { st.pj.list = st.pj.list.concat(L); st.pj.n = (st.pj.n || 1) + 1; }
+    else st.pj = { d: td(), list: L, i: 0, n: 1 };
+    save(); if (done) done(true);
+  });
+}
+$("pin").onclick = function () {
+  var b = this;
+  if (aiIdea()) {
+    st.pj.i = (st.pj.i || 0) + 1;
+    if (st.pj.i >= st.pj.list.length && (st.pj.n || 1) < 3 && window.AI) {
+      b.disabled = true; b.textContent = "Thinking\u2026";
+      moreIdeas(function () { b.disabled = false; b.textContent = "Another idea"; if (st.pj.i >= st.pj.list.length) st.pj.i = 0; save(); project(); });
+      return;
+    }
+    if (st.pj.i >= st.pj.list.length) st.pj.i = 0;
+    save(); project(); return;
+  }
+  var o = (st.pio && st.pio.d === td()) ? st.pio.n : 0; st.pio = { d: td(), n: o + 1 }; save(); project();
+};
+project();
 $("pib").onclick = function () {
   st.tc = st.tc || []; st.tc.push({ d: td(), t: "Built: " + this.dataset.t }); save(); tlog();
   this.textContent = "Added to your log"; var b = this; setTimeout(function () { b.textContent = "I built this"; }, 2000);
@@ -73,8 +108,9 @@ function challengeCount(id) {
   return 0;
 }
 function thisWeeksChallenges() {
-  var seed = Math.floor((Date.now() / 86400000 + 3) / 7), n = CHALLENGES.length, out = [];
-  for (var k = 0; out.length < 3 && k < n * 2; k++) { var c = CHALLENGES[(seed * 5 + k * 4) % n]; if (out.indexOf(c) < 0) out.push(c); }
+  var L = CONTENT.challenges.filter(function (c) { return c.on !== false; });
+  var seed = Math.floor((Date.now() / 86400000 + 3) / 7), n = L.length, out = [];
+  for (var k = 0; out.length < Math.min(3, n) && k < n * 4; k++) { var c = L[(seed * 5 + k * 4) % n]; if (out.indexOf(c) < 0) out.push(c); }
   return out;
 }
 function challenges() {
@@ -84,7 +120,7 @@ function challenges() {
     return '<li class="' + (fin ? "fin" : "") + '"><div class="head"><span>' + (fin ? "✓ " : "") + esc(c.text) + '</span><span class="mute">' + v + "/" + c.goal +
       '</span></div><div class="bar"><i style="width:' + (100 * v / c.goal) + '%"></i></div></li>';
   }).join("");
-  $("wchs").textContent = done + " of 3 done. New challenges every Monday.";
+  $("wchs").textContent = L.length ? done + " of " + L.length + " done. New challenges every Monday." : "No challenges this week.";
   st.chw = st.chw || {};
   if (st.chw[weekKey()] !== done) { st.chw[weekKey()] = done; save(); }
 }
@@ -123,20 +159,14 @@ $("mopv").onclick = function () { moOff--; month(); };
 $("monx").onclick = function () { if (moOff < 0) { moOff++; month(); } };
 
 // ---------- Rank tracker ----------
-var RANKS = {
-  "Apex Legends": { pts: "RP", tiers: ["Rookie", "Bronze", "Silver", "Gold", "Platinum", "Diamond"], div: ["IV", "III", "II", "I"], top: ["Master", "Apex Predator"] },
-  "Valorant": { pts: "RR", tiers: ["Iron", "Bronze", "Silver", "Gold", "Platinum", "Diamond", "Ascendant", "Immortal"], div: ["1", "2", "3"], top: ["Radiant"] },
-  "Fortnite": { pts: "%", tiers: ["Bronze", "Silver", "Gold", "Platinum", "Diamond"], div: ["I", "II", "III"], top: ["Elite", "Champion", "Unreal"] },
-  "CS2": { pts: "Rating", tiers: [], div: [], top: [] }
-};
-function rankInfo() { return RANKS[st.gm] || { pts: "Points", tiers: [], div: [], top: [] }; }
+function rankInfo() { return rankInfoFor(st); }
 function rankSetup() {
   var R = rankInfo(), opts = [];
   R.tiers.forEach(function (t) { R.div.forEach(function (d) { opts.push(t + " " + d); }); });
   opts = opts.concat(R.top);
   $("rkd").innerHTML = opts.map(function (o) { return '<option value="' + o + '">'; }).join("");
   $("rkpl").textContent = R.pts + " (optional)";
-  $("rkn").placeholder = st.gm === "CS2" ? "Example: Premier 12,500" : opts.length ? "Example: " + opts[Math.min(14, opts.length - 1)] : "Your rank";
+  $("rkn").placeholder = st.gm === "CS2" ? "Example: Premier 12,500" : st.gm === "Chess" ? "Example: 1200 rapid" : opts.length ? "Example: " + opts[Math.min(14, opts.length - 1)] : "Your rank";
 }
 function ranks() {
   var L = st.rkl || [], last = L[L.length - 1], R = rankInfo();
@@ -198,3 +228,46 @@ var baseSumry = sumry;
 sumry = function () { baseSumry(); challenges(); notes(); month(); };
 var baseShow = show;
 show = function (c) { baseShow(c); if (c === "gaming") drills(); };
+
+// ---------- What's new popup ----------
+function whatsNew() {
+  var N = CONTENT.news;
+  if (!st.seenv) { st.seenv = N.v; save(); return; }   // brand new users get the tour instead
+  if (st.seenv === N.v || !N.items.length) return;
+  st.seenv = N.v; save();
+  var d = document.createElement("dialog"); d.className = "dlg";
+  d.innerHTML = '<form method="dialog"><p class="mute" style="margin:0">Version ' + esc(N.v) + '</p><h2>What\'s new</h2><ul class="news">' +
+    N.items.map(function (n) { return "<li>" + esc(n) + "</li>"; }).join("") + '</ul><div class="row"><button class="pri" type="submit">Got it</button></div></form>';
+  d.addEventListener("close", function () { d.remove(); });
+  document.body.appendChild(d); d.showModal();
+}
+setTimeout(whatsNew, 600);
+
+// ---------- When fresh content arrives from the database ----------
+window.onContent = function () {
+  setQ();
+  if (!$("p-summary").hidden) challenges();
+};
+
+// ---------- AI: custom game plan and today's project ideas ----------
+function refreshGame() {
+  build(); gameWords(); setFc(); tasks("gaming"); drills(); rankSetup(); ranks(); chart();
+}
+function aiStart() {
+  if (!window.AI) return;
+  // Game plan: make one if this game doesn't have one yet (tries at most once a day per game)
+  var game = st.gn || "", key = normGame(game);
+  var auto = !st.gg || st.gg === detectGame(game).g;
+  if (key && auto && !aiPlan(st) && !(st.gpTry && st.gpTry.k === key && st.gpTry.d === td())) {
+    st.gpTry = { k: key, d: td() }; save();
+    window.AI.gamePlan(game).then(function (r) {
+      if (!r || normGame(st.gn || "") !== key) return;
+      st.gp = r; if (st.gg) st.gg = r.g; save(); refreshGame();
+      toast("Your " + r.name + " plan is ready");
+    });
+  }
+  // Project ideas: get today's batch
+  if (!aiIdea()) moreIdeas(function (ok) { if (ok) project(); });
+}
+window.addEventListener("ai-ready", aiStart);
+if (window.AI) aiStart();

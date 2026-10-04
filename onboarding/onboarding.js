@@ -20,27 +20,42 @@ function norm(m){return((m%1440)+1440)%1440}
 function nice(m){m=norm(m);var h=Math.floor(m/60);return(h%12||12)+":"+pad(m%60)+" "+(h<12?"AM":"PM")}
 function hhmm(m){m=norm(m);return pad(Math.floor(m/60))+":"+pad(m%60)}
 
-function matchGame(t){var s=String(t||"").toLowerCase().replace(/[^a-z0-9]/g,"");
- if(s.indexOf("apex")>-1)return"Apex Legends";
- if(s.indexOf("fortnite")>-1)return"Fortnite";
- if(s.indexOf("valo")>-1)return"Valorant";
- if(s.indexOf("counterstrike")>-1||s.indexOf("csgo")>-1||s==="cs"||s.indexOf("cs2")>-1)return"CS2";
- return"Another game"}
+// ===== Game type =====
+// The genre picked on the "What kind of game" question, or our guess from the game name
+function aiOk(){return a.gp&&a.gp.for===normGame(a.gm)}
+function gid(){return a.gt&&a.gtFor===(a.gm||"")?a.gt:aiOk()?a.gp.g:detectGame(a.gm).g}
+function G(){return genreOf({gn:a.gm,gg:gid(),gp:aiOk()?a.gp:null})}
+
+// ===== AI plan for the typed game (built-in plan is used until it arrives, or if it fails) =====
+function startAI(){
+ if(!window.AI||!a.gm||normGame(a.gm)===a.aiFor)return;
+ var mine=a.aiFor=normGame(a.gm);a.aiBusy=true;a.gtUser=false;
+ window.AI.gamePlan(a.gm).then(function(r){
+  if(mine!==normGame(a.gm))return;
+  a.aiBusy=false;a.gp=r||null;
+  if(r&&!a.gtUser){a.gt=r.g;a.gtFor=a.gm||""}
+  var k=(steps()[i]||{}).k;
+  if(["gt","rk","wk","dr"].indexOf(k)>-1||i>=steps().length)draw();
+ })}
+window.addEventListener("ai-ready",startAI);
+function words(t){return String(t).replace("@skill",G().skill).replace("@play",G().play)}
 
 // ===== Questions =====
-var GOALS=[["rank","Rank up"],["code","Learn to code"],["sleep","Sleep better"]];
-var DRO=[["track","Tracking"],["recoil","Recoil control"],["flick","Flicks"],["switch","Target switching"],["micro","Small precise aim"],["move","Aim while moving"]];
+var GOALS=[["rank","Get better at my game"],["code","Learn to code"],["sleep","Sleep better"]];
 var S=[
- {k:"mode",q:"How do you want to set up?",h:"Quick takes 30 seconds. Full builds a better plan.",t:"one",o:[["quick","Quick setup (3 questions)"],["full","Full setup"]]},
+ {k:"mode",q:"How do you want to set up?",h:"Quick takes 30 seconds. Full builds a better plan.",t:"one",o:[["quick","Quick setup (4 questions)"],["full","Full setup"]]},
  {k:"nm",q:"What's your name?",t:"text"},
  {k:"goals",q:"What do you want to work on?",h:"Pick all that apply.",t:"multi",o:GOALS},
- {k:"gm",q:"What game do you play most?",h:"Type the name of your game.",t:"text",ph:"Example: Apex Legends",f:rankFull},
+ {k:"gm",q:"What game do you play most?",h:"Type the name of any game.",t:"text",ph:"Example: Apex, chess, GeoGuessr, Rocket League",f:function(){return has("rank")}},
  {k:"g2",q:"Do you play a second game?",h:"Optional. Leave it blank to skip.",t:"text",opt:1,ph:"Example: Rocket League",f:rankFull},
- {k:"rk",q:"What's your rank right now?",t:"one",f:rankFull,
-  o:[["new","New to ranked"],["low","Bronze to Silver"],["mid","Gold to Platinum"],["high","Diamond or higher"]]},
- {k:"wk",q:"What do you want to fix?",h:"Pick all that apply.",t:"multi",f:rankFull,
-  o:[["track","Tracking"],["recoil","Recoil"],["flick","Flicks"],["pos","Positioning"],["tilt","Tilting"],["sense","Game sense"]]},
- {k:"dr",q:"Pick your aim drills",h:"We picked some from your weak spots. Change them if you want.",t:"multi",opt:1,f:rankFull,o:DRO},
+ {k:"gt",q:"What kind of game is it?",h:function(){return a.aiBusy?"Making a custom plan for "+a.gm+"\u2026 You can keep going.":aiOk()?"Custom plan ready. We guessed the type, change it if it's wrong.":"We guessed from the name. Change it if it's wrong."},t:"one",f:rankFull,
+  o:function(){return GENRE_ORDER.map(function(g){return[g,GENRES[g].name]})}},
+ {k:"rk",q:"How good are you right now?",t:"one",f:rankFull,
+  o:[["new","Just starting out"],["low","Beginner"],["mid","Intermediate"],["high","Advanced"]]},
+ {k:"wk",q:"What do you want to get better at?",h:"Pick all that apply.",t:"multi",f:rankFull,
+  o:function(){return G().drills.map(function(d){return[d.id,d.name]}).concat([["tilt","Staying calm"],["sense","Making better decisions"]])}},
+ {k:"dr",q:"Pick your practice drills",h:function(){return a.aiBusy?"Your custom drills are still loading. These will update when they're ready.":"We picked some from your answers. Change them if you want."},t:"multi",opt:1,f:rankFull,
+  o:function(){return G().drills.map(function(d){return[d.id,d.name+" ("+d.time+")"]})}},
  {k:"fd",q:"Which days are you free most of the day?",h:"These get a longer routine. Pick none if you're busy every day.",t:"multi",opt:1,f:rankFull,
   o:[["0","Mon"],["1","Tue"],["2","Wed"],["3","Thu"],["4","Fri"],["5","Sat"],["6","Sun"]]},
  {k:"hr",q:"On free days, how long do you play?",t:"one",f:rankFull,
@@ -63,30 +78,30 @@ function steps(){return S.filter(function(s){return!s.f||s.f()})}
 function ok(s){var v=a[s.k];if(s.opt)return true;if(s.t==="multi")return!!(v&&v.length);return!!(v&&String(v).trim())}
 
 // ===== Build the plan from answers =====
-var DR={track:"Tracking drills (Strafetrack or Smoothbot)",recoil:"Recoil control in the practice range",flick:"Flick drills (Gridshot)",switch:"Target switching drills",micro:"Small precise aim (Microshot)",move:"Strafe-and-shoot drills"};
-function drillKeys(){return a.dr||(a.wk||[]).filter(function(w){return DR[w]})}
+function drillIds(){return G().drills.map(function(d){return d.id})}
+function drillKeys(){var ids=drillIds();return(a.dr||a.wk||[]).filter(function(w){return ids.indexOf(w)>-1})}
 function freeDays(){return a.fd?a.fd.map(Number):(full()?[]:[5,6])}
-var RES={web:"The Odin Project",py:"CS50P (free Harvard Python course)",game:"Godot docs or Unity Learn",it:"Google IT Support or Professor Messer",sec:"TryHackMe beginner path",ns:"CS50x (free Harvard intro course)"};
+var RES=CONTENT.courses;
 function make(){
  var p={},code=has("code");
  // gaming
- var h=a.hr||"2",play=a.rk==="new"?"Play block":"Ranked block";
+ var h=a.hr||"2",play=a.rk==="new"?"Practice games":"@play";
  var rule=hasWk("tilt")?"Stop after 2 losses in a row":"Take a break if you lose focus";
- var rev=hasWk("pos")?"Rewatch one death: where should you have been?":"Watch at 1.5-2x, write one fix";
- var fl=[["Aim training, "+(h==="1"?"10":"15")+" min","@foc"]];
+ var rev="@rev";
+ var fl=[["@skill, "+(h==="1"?"10":"15")+" min","@foc"]];
  if(code)fl.push(["Tech learning, "+(h==="1"?"30":"45")+" min","Check the Coding tab"]);
  if(h==="1")fl.push([play+", 45 min",rule]);
- else if(h==="2")fl.push([play+" 1, 60 min","Bring your focus goal into every fight"],["Break, 15 min","Walk, water, no screen"],[play+" 2, 45 min",rule]);
- else fl.push([play+" 1, 60-90 min","Bring your focus goal into every fight"],["Break, 15 min","Walk, water, no screen"],[play+" 2, 60-90 min",rule]);
- if(hasWk("sense")&&h!=="1")fl.push(["Watch a pro player, 15 min","Notice where they rotate and why"]);
- if(a.g2&&a.g2.trim())fl.push(["Optional: "+a.g2.trim()+" for fun","No ranked pressure"]);
+ else if(h==="2")fl.push([play+" 1, 60 min","Bring your focus goal into every game"],["Break, 15 min","Walk, water, no screen"],[play+" 2, 45 min",rule]);
+ else fl.push([play+" 1, 60-90 min","Bring your focus goal into every game"],["Break, 15 min","Walk, water, no screen"],[play+" 2, 60-90 min",rule]);
+ if(hasWk("sense")&&h!=="1")fl.push(["Watch a top player, 15 min","Notice the choices they make and why"]);
+ if(a.g2&&a.g2.trim())fl.push(["Optional: "+a.g2.trim()+" for fun","No pressure, just fun"]);
  fl.push(["Review one game, "+(h==="1"?"10":"15")+" min",rev]);
  if(hasWk("tilt"))fl.push(["Log your session","Calm or tilted, in the Tilt tracker"]);
- var short=[["Aim warm-up, 10 min","@foc"]];
+ var short=[["@skill warm-up, 10 min","@foc"]];
  if(code)short.push(["Tech learning, 20 min","Even a little keeps the streak"]);
  short.push([play+", 45-60 min","Only if you have time"],["Write one fix","Quick note, then done"]);
  p.full=fl;p.short=short;
- p.drills=drillKeys().map(function(w){return DR[w]});
+ p.drills=drillKeys().map(function(w){return G().drills.filter(function(d){return d.id===w})[0].name});
  // coding
  var m={none:"20 min",beg:"30 min",mid:"45 min"}[a.cl]||"30 min",hands=a.cp==="it"||a.cp==="sec";
  p.coding=[["Study "+m,RES[a.cp]||RES.ns],
@@ -97,7 +112,7 @@ function make(){
  var b=mins(a.bt||"22:30"),w=mins(a.wt||"07:00");
  p.hours=norm(w-b)/60;
  p.sleep=[["In bed by "+nice(b),"Same time every night"]];
- if(has("rank"))p.sleep.push(["No ranked after "+nice(b-60),"Wind down instead"]);
+ if(has("rank"))p.sleep.push(["No competitive games after "+nice(b-60),"Wind down instead"]);
  p.sleep.push(["Screens off by "+nice(b-30),"Dim lights, stretch"],["No caffeine after "+nice(b-480),"Water instead"],["Wake at "+nice(w),"No snooze spiral"]);
  p.rem=hhmm(b-30);
  return p}
@@ -106,30 +121,35 @@ function make(){
 function draw(){var L=steps();if(i>=L.length){review();return}
  var s=L[i];
  $("stp").textContent="Question "+(i+1)+" of "+L.length;$("pg").style.width=(100*i/L.length)+"%";
- $("q").textContent=s.q;$("hint").textContent=s.h||"";
+ $("q").textContent=s.q;$("hint").textContent=(typeof s.h==="function"?s.h():s.h)||"";
  if(s.t==="text"){
   $("ans").innerHTML='<input type="text" id="ti" maxlength="40">';
   var ti=$("ti");ti.placeholder=s.ph||"Type here";ti.value=a[s.k]||"";
   ti.oninput=function(){a[s.k]=ti.value;btn()};
-  ti.onkeydown=function(e){if(e.key==="Enter"&&ok(s)){i++;draw()}};ti.focus();
+  ti.onkeydown=function(e){if(e.key==="Enter"&&ok(s)){if(s.k==="gm")startAI();i++;draw()}};ti.focus();
  }else{
-  if(s.k==="dr"&&!a.dr)a.dr=(a.wk||[]).filter(function(w){return DR[w]});
+  if(s.k==="gt"&&a.gtFor!==(a.gm||"")){a.gt=aiOk()?a.gp.g:detectGame(a.gm).g;a.gtFor=a.gm||""}
+  if(s.k==="dr"){var ids=drillIds();a.dr=(a.dr&&a.drFor===gid()?a.dr:(a.wk||[])).filter(function(w){return ids.indexOf(w)>-1});a.drFor=gid()}
+  if(s.k==="wk"){var okIds=drillIds().concat(["tilt","sense"]);a.wk=(a.wk||[]).filter(function(w){return okIds.indexOf(w)>-1})}
   var v=a[s.k]||(s.t==="multi"?[]:"");
-  $("ans").innerHTML='<div class="ch">'+s.o.map(function(o){var on=s.t==="multi"?v.indexOf(o[0])>-1:v===o[0];return'<button type="button" data-v="'+o[0]+'" aria-pressed="'+on+'">'+o[1]+"</button>"}).join("")+"</div>";
+  var opts=typeof s.o==="function"?s.o():s.o;
+  $("ans").innerHTML='<div class="ch'+(opts.length>8?" long":"")+'">'+opts.map(function(o){var on=s.t==="multi"?v.indexOf(o[0])>-1:v===o[0];return'<button type="button" data-v="'+o[0]+'" aria-pressed="'+on+'">'+o[1]+"</button>"}).join("")+"</div>";
   $("ans").firstChild.onclick=function(e){var b=e.target.closest("button");if(!b)return;var x=b.dataset.v;
    if(s.t==="multi"){var arr=(a[s.k]||[]).slice(),p=arr.indexOf(x);if(p>-1)arr.splice(p,1);else arr.push(x);a[s.k]=arr}else a[s.k]=x;
+   if(s.k==="gt")a.gtUser=true;
    if(s.k==="th")document.documentElement.style.setProperty("--acc",x);
    draw()}}
  $("bk").hidden=i===0;$("nx").textContent="Next";$("impw").hidden=i!==0;btn()}
 function btn(){var s=steps()[i];$("nx").disabled=s?!ok(s):false}
 
-function list(t,arr){return"<h3>"+t+"</h3><ul class=\"plan\">"+arr.map(function(x){return"<li><b>"+esc(x[0])+"</b>"+(x[1]?" <span class=\"mute\">"+esc(x[1]==="@foc"?"Your aim drill":x[1])+"</span>":"")+"</li>"}).join("")+"</ul>"}
+function list(t,arr){return"<h3>"+t+"</h3><ul class=\"plan\">"+arr.map(function(x){return"<li><b>"+esc(words(x[0]))+"</b>"+(x[1]?" <span class=\"mute\">"+esc(x[1]==="@foc"?"Your practice drill":x[1]==="@rev"?G().review:x[1])+"</span>":"")+"</li>"}).join("")+"</ul>"}
 function review(){var p=make(),h="";
  $("stp").textContent="All done";$("pg").style.width="100%";
  $("q").textContent="Here's your plan, "+a.nm.trim();$("hint").textContent="You can edit any task later.";
  if(has("rank")){
   if(a.gm&&a.gm.trim())h+="<p><b>Game:</b> "+esc(a.gm.trim())+(a.g2&&a.g2.trim()?" (and "+esc(a.g2.trim())+")":"")+"</p>";
-  if(p.drills.length)h+="<p><b>Aim focus:</b> "+esc(p.drills.join(", "))+"</p>";
+  h+="<p><b>Game type:</b> "+esc(GENRES[gid()].name)+(G().ai?" (custom plan for "+esc(G().game)+")":"")+"</p>";
+  if(p.drills.length)h+="<p><b>"+esc(G().focus)+":</b> "+esc(p.drills.join(", "))+"</p>";
   if(freeDays().length)h+=list("Free days",p.full);
   h+=list("Busy days",p.short)}
  if(has("code"))h+=list("Coding",p.coding);
@@ -139,10 +159,11 @@ function review(){var p=make(),h="";
  $("ans").innerHTML=h;$("bk").hidden=false;$("impw").hidden=true;$("nx").textContent="Start my planner";$("nx").disabled=false}
 
 function finish(){var p=make();
- st.ob=a;st.nm=a.nm.trim();
+ var ob={};for(var key in a)if(key!=="gp")ob[key]=a[key];
+ st.ob=ob;st.nm=a.nm.trim();if(has("rank")&&aiOk())st.gp=a.gp;else delete st.gp;
  st.gl=GOALS.filter(function(g){return has(g[0])}).map(function(g){return g[1]}).join(", ");
  st.qm=a.qm||st.qm||"mix";if(a.th)st.th=a.th;st.rm=st.rm||{};st.rm.b=p.rem;st.ct=st.ct||{};st.ct.sleep=p.sleep;
- if(has("rank")){st.gn=(a.gm||"").trim();st.gn2=(a.g2||"").trim();st.gm=matchGame(a.gm);st.fd=freeDays();st.plan={full:p.full,short:p.short,drills:p.drills}}else delete st.plan;
+ if(has("rank")){st.gn=(a.gm||"").trim();st.gn2=(a.g2||"").trim();st.gm=detectGame(a.gm).k||"Another game";st.gg=gid();st.fd=freeDays();st.plan={full:p.full,short:p.short,drills:p.drills,gg:gid()}}else delete st.plan;
  if(has("code"))st.ct.coding=p.coding;else delete st.ct.coding;
  delete st.ct.gaming;
  if(st.dn)["gaming","sleep","coding"].forEach(function(c){delete st.dn[td()+c]});
@@ -150,7 +171,7 @@ function finish(){var p=make();
 
 // ===== Sample day =====
 function sample(p){var fd=freeDays(),L=fd.length?p.full:p.short,t=mins(a.wt||"08:00")+60,rows=[];
- L.forEach(function(x){var m=/(\d+)/.exec(x[0].replace(/block \d,/,"block,"));rows.push([nice(t),x[0].replace(/, \d+(-\d+)? min$/,""),x[1]==="@foc"?(p.drills[0]||"Your aim drill"):x[1]]);t+=m?+m[1]:10});
+ L.forEach(function(x){var m=/(\d+)/.exec(x[0].replace(/block \d,/,"block,"));rows.push([nice(t),words(x[0]).replace(/, \d+(-\d+)? min$/,""),x[1]]);t+=m?+m[1]:10});
  return"<h3>Sample "+(fd.length?"free":"busy")+" day</h3><ul class=\"sample\">"+rows.map(function(r){return"<li><span>"+r[0]+"</span><div><b>"+esc(r[1])+"</b></div></li>"}).join("")+"</ul>"}
 
 // ===== Import a backup =====
@@ -161,6 +182,6 @@ $("impf").onchange=function(){var f=this.files[0];this.value="";if(!f)return;
  r.readAsText(f)};
 
 // ===== Buttons =====
-$("nx").onclick=function(){if(i>=steps().length){finish();return}i++;draw()};
+$("nx").onclick=function(){if(i>=steps().length){finish();return}if((steps()[i]||{}).k==="gm")startAI();i++;draw()};
 $("bk").onclick=function(){if(i>0){i--;draw()}};
 draw();

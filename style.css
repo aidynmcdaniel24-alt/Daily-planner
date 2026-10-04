@@ -305,3 +305,41 @@ body.focus #p-summary{display:none!important}
 body.focus main{padding-bottom:100px}
 input[aria-invalid="true"]{border-color:var(--hot)}
 input[aria-invalid="true"]:focus{box-shadow:0 0 0 3px color-mix(in srgb,var(--hot) 22%,transparent)}
+/* installed app: draw our own title bar when the user hides Chrome's */
+.titlebar{display:none}
+@media (display-mode:window-controls-overlay){
+ .titlebar{display:flex;align-items:center;position:fixed;z-index:70;left:env(titlebar-area-x,0);top:env(titlebar-area-y,0);width:env(titlebar-area-width,100%);height:env(titlebar-area-height,33px);
+  padding:0 12px;background:var(--bg);color:var(--mute);font:600 12px "Geist",sans-serif;-webkit-app-region:drag;app-region:drag;user-select:none}
+ body{padding-top:env(titlebar-area-height,33px)}
+}
+/* legal pages */
+.legal .card h2{font-size:17px;margin:20px 0 6px}
+.legal .card h2:first-of-type{margin-top:16px}
+.legal .card p,.legal .card li{color:var(--text);font-size:15px}
+.legal .card ul{padding-left:20px}
+.legal a{color:var(--acc)}
+a.back{text-decoration:none}
+.legal-links{text-align:center;font-size:13px;color:var(--mute);margin:14px 0 0}
+.legal-links a{color:var(--mute)}
+.legal-links a:hover{color:var(--text)}
+/* popups */
+.dlg{width:min(440px,calc(100vw - 32px));border:1px solid var(--line2);border-radius:16px;background:var(--panel);color:var(--text);padding:22px;box-shadow:0 24px 60px rgba(0,0,0,.45)}
+.dlg::backdrop{background:rgba(5,7,12,.6)}
+.dlg h2{font-size:20px;margin:2px 0 4px}
+.dlg .mute{margin:0}
+.dlg textarea{min-height:110px}
+.dlg .row button{flex:1}
+.news{padding-left:20px;margin:12px 0 4px}
+.news li{margin:8px 0}
+.ch.long{grid-template-columns:1fr}
+.ch.long button{padding:11px 12px}
+/* admin page */
+.admin textarea{font:13px/1.5 "Geist Mono",monospace}
+.admin h3{font:600 14px "Geist",sans-serif;margin:16px 0 4px}
+.admin code{font:12px "Geist Mono",monospace;background:var(--sunk);padding:1px 5px;border-radius:4px}
+.crow{display:grid;grid-template-columns:auto 1fr 70px;gap:8px;align-items:center;margin-top:8px}
+.crow input{margin-top:0}
+.uid{font-size:13px!important;letter-spacing:0!important;overflow-wrap:anywhere}
+.vres{list-style:none;padding:0;font-size:13px}.vres .good{color:var(--ok)}.vres .bad{color:var(--hot)}
+.savebar{position:sticky;bottom:12px;background:var(--bg);padding:8px;border-radius:12px;border:1px solid var(--line)}
+a.btnlink{display:inline-block;text-decoration:none;padding:9px 14px;border-radius:8px}

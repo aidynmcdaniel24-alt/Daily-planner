@@ -3,7 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Leaderboard · Daily Planner</title>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://apis.google.com https://www.google.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.googleusercontent.com https://www.gstatic.com; connect-src 'self' https://bible-api.com https://*.googleapis.com https://*.firebaseio.com https://www.google.com https://apis.google.com; frame-src https://daily-planner-8801e.firebaseapp.com https://accounts.google.com https://www.google.com https://apis.google.com; manifest-src 'self'; worker-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'">
+<title>Leaderboard</title>
 <link rel="manifest" href="../manifest.json">
 <meta name="theme-color" content="#0a0c12">
 <link rel="apple-touch-icon" href="../icons/apple-touch-icon.png">
@@ -13,6 +14,7 @@
 <link rel="stylesheet" href="../style.css">
 </head>
 <body>
+<div class="titlebar" aria-hidden="true"><span>Daily Planner</span></div>
 <main>
 <button type="button" class="back" id="bk">
  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
@@ -31,7 +33,8 @@
   <p class="mute" style="margin:4px 0 0">Share it so friends can add you.</p>
   <div class="codebox"><span id="my"></span><button type="button" id="cp">Copy</button></div>
   <label class="l" for="dn" style="margin-top:14px">Name shown to friends</label>
-  <input type="text" id="dn" maxlength="24">
+  <input type="text" id="dn" maxlength="24" aria-describedby="dne">
+  <p class="err" id="dne" hidden></p>
  </div>
 
  <div class="card">
