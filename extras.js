@@ -267,7 +267,8 @@ function aiStart() {
     });
   }
   // Project ideas: get today's batch
-  if (!aiIdea()) moreIdeas(function (ok) { if (ok) project(); });
+  // Project ideas: get today's batch (one try per day, so a failing AI doesn't eat the daily limit)
+  if (!aiIdea() && st.pjTry !== td()) { st.pjTry = td(); save(); moreIdeas(function (ok) { if (ok) project(); }); }
 }
 window.addEventListener("ai-ready", aiStart);
 if (window.AI) aiStart();

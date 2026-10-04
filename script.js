@@ -114,12 +114,15 @@ function mkEd(c){var box=document.createElement("div");box.className="ed";box.in
   if(a==="rst"){if(st.ct)delete st.ct[c];fin(c);return}
   if(a==="up"){var i=+b.dataset.i;if(i>0)move(c,i,i-1);return}
   var cur=TK(c).map(function(t){return t.slice()});
-  if(a==="del"){var before=TK(c).map(function(t){return t.slice()}),bd=((st.dn||{})[td()+c]||[]).slice(),gone=cur.splice(+b.dataset.i,1)[0];
-   st.ct=st.ct||{};st.ct[c]=cur;fin(c);
+  if(a==="del"){var before=TK(c).map(function(t){return t.slice()}),bd=((st.dn||{})[td()+c]||[]).slice(),di=+b.dataset.i,gone=cur.splice(di,1)[0];
+   // keep today's checkmarks: drop the deleted one and shift the rest up
+   st.dn=st.dn||{};st.dn[td()+c]=bd.filter(function(x){return x!==di}).map(function(x){return x>di?x-1:x});
+   st.ct=st.ct||{};st.ct[c]=cur;fin(c,true);
    undoToast("Deleted \u201C"+gone[0]+"\u201D",function(){st.ct[c]=before;st.dn=st.dn||{};st.dn[td()+c]=bd;save();tasks(c);drawEd(c)});return}
   if(a==="add"){var v=$("ei-"+c).value.trim();if(!v)return;cur.push([v,$("es-"+c).value.trim()])}
-  st.ct=st.ct||{};st.ct[c]=cur;fin(c)}}
-function fin(c){if(st.dn)delete st.dn[td()+c];save();tasks(c);drawEd(c)}
+  st.ct=st.ct||{};st.ct[c]=cur;fin(c,true)}}
+// keep=true leaves today's checkmarks alone (adding/deleting); restoring defaults clears them
+function fin(c,keep){if(!keep&&st.dn)delete st.dn[td()+c];save();tasks(c);drawEd(c)}
 function move(c,from,to){if(from===to)return;var cur=TK(c).map(function(t){return t.slice()}),d=(st.dn||{})[td()+c]||[];
  var flags=cur.map(function(t,i){return d.indexOf(i)>-1}),item=cur.splice(from,1)[0],f=flags.splice(from,1)[0];
  cur.splice(to,0,item);flags.splice(to,0,f);

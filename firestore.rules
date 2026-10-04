@@ -43,7 +43,8 @@ service cloud.firestore {
 
     // Nudges between friends (one per friend, at most every 12 hours)
     match /nudges/{toId}/in/{fromId} {
-      allow read, delete: if isMe(toId);
+      allow read: if isMe(toId);
+      allow delete: if isMe(toId) || isMe(fromId);
       allow create: if isMe(fromId) && fromId != toId
         && request.resource.data.keys().hasOnly(['name', 'time'])
         && request.resource.data.name is string && request.resource.data.name.size() > 0

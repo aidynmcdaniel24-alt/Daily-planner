@@ -69,9 +69,12 @@ async function deleteAccount() {
   try {
     await deleteLogins(u.uid);
     try { await deleteDoc(doc(db, "board", u.uid)); } catch (x) {}
+    try { await takeNudges(u.uid); } catch (x) {}   // nudges sent to me
+    const sent = (getLocal().lb || {}).nd || {};       // nudges I sent to friends
+    for (const to of Object.keys(sent)) { try { await deleteDoc(doc(db, "nudges", to, "in", u.uid)); } catch (x) {} }
     await deleteDoc(doc(db, "users", u.uid));
     await deleteUser(u);
-    localStorage.removeItem("apexplan");
+    ["apexplan", "apexlogin", "apexseen", "apexai"].forEach(function (k) { localStorage.removeItem(k); });
     location.replace(LOGIN);
   } catch (e) {
     alert(e.code === "auth/requires-recent-login"
@@ -164,13 +167,16 @@ function openFeedback() {
   };
   d.querySelector("#fbc").onclick = function () { d.close(); };
   d.addEventListener("close", function () { d.remove(); });
+  let sent = false;
   d.querySelector("#fbf").onsubmit = async function (e) {
     e.preventDefault();
+    if (sent) { d.close(); return; }   // the "Close" button after sending
     const text = d.querySelector("#fbx").value.trim(), err = d.querySelector("#fbe"), btn = d.querySelector("#fbs");
     if (!text) { err.hidden = false; err.textContent = "Type a message first."; return; }
     btn.disabled = true; btn.textContent = "Sending…";
     try {
       await sendFeedback(auth.currentUser.uid, type, text, location.pathname.slice(-100));
+      sent = true;
       d.querySelector("form").innerHTML = '<h2>Thanks!</h2><p class="mute">Your feedback was sent.</p><div class="row"><button type="submit" class="pri">Close</button></div>';
     } catch (x) { btn.disabled = false; btn.textContent = "Send"; err.hidden = false; err.textContent = "Couldn't send. Check your internet and try again."; }
   };
@@ -231,6 +237,7 @@ if (!ready) {
       setInterval(markSeen, 5 * 60 * 1000);
       if (ac) ac.textContent = "Signed in as " + (user.email || "Google user");
       if (lo) lo.textContent = "Log out";
+      showProfile(user);   // show the profile right away, even if syncing is slow or offline
       checkVerified(user);
       if (del) { del.hidden = false; del.onclick = deleteAccount; }
       if (lout) { lout.hidden = false; lout.onclick = logoutAll; }
@@ -240,7 +247,6 @@ if (!ready) {
         if (r === "down") { location.reload(); return; }
       } catch (e) {}
       updateBoard(user.uid, getLocal()).catch(function () {});
-      showProfile(user);
       showNudges(user.uid);
       showLogins(user.uid);
     } else {

@@ -3,7 +3,7 @@ import { auth, ready, syncDown, getLocal, setLocal, markLogin, recordLogin } fro
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, sendPasswordResetEmail, sendEmailVerification, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
 
 const $ = function (id) { return document.getElementById(id); };
-let mode = "in", busy = false;
+let mode = "in", busy = false, signingIn = false;
 
 // Use the saved theme
 const saved = getLocal();
@@ -47,10 +47,10 @@ function emailError(em) {
   if (TYPOS[dom]) return "Did you mean " + at[0] + "@" + TYPOS[dom] + "?";
   return "";
 }
-function checkEmail() {
+function checkEmail(focus) {
   const err = emailError($("em").value.trim());
   $("em").setAttribute("aria-invalid", err ? "true" : "false");
-  if (err) { msg(err); $("em").focus(); }
+  if (err) { msg(err); if (focus) $("em").focus(); }   // only jump back on submit, never while typing elsewhere
   return !err;
 }
 $("em").addEventListener("blur", function () { if (this.value.trim()) checkEmail(); });
@@ -91,11 +91,11 @@ $("f").onsubmit = async function (e) {
   e.preventDefault();
   if (!ready) return msg("Firebase isn't set up yet. Paste your config into firebase.js.");
   const em = $("em").value.trim(), pw = $("pw").value;
-  if (!checkEmail()) return;
+  if (!checkEmail(true)) return;
   if (!pw) return msg("Type your password.");
   if (mode === "up" && (pw.length < 8 || !/[A-Za-z]/.test(pw) || !/[0-9]/.test(pw)))
     return msg("Use at least 8 characters with a letter and a number.");
-  $("go").disabled = true;
+  $("go").disabled = true; signingIn = true;
   try {
     const r = mode === "in"
       ? await signInWithEmailAndPassword(auth, em, pw)
@@ -104,17 +104,19 @@ $("f").onsubmit = async function (e) {
     done(r.user, true);
   } catch (err) {
     msg(ERR[err.code] || "Something went wrong. Try again.");
-    $("go").disabled = false;
+    $("go").disabled = false; signingIn = false;
   }
 };
 
 // Google
 $("gg").onclick = async function () {
   if (!ready) return msg("Firebase isn't set up yet. Paste your config into firebase.js.");
+  signingIn = true;
   try {
     const r = await signInWithPopup(auth, new GoogleAuthProvider());
     done(r.user, true);
   } catch (err) {
+    signingIn = false;
     if (err.code !== "auth/popup-closed-by-user" && err.code !== "auth/cancelled-popup-request")
       msg(ERR[err.code] || "Google sign-in failed. Try again.");
   }
@@ -124,7 +126,7 @@ $("gg").onclick = async function () {
 $("fp").onclick = async function () {
   if (!ready) return msg("Firebase isn't set up yet. Paste your config into firebase.js.");
   const em = $("em").value.trim();
-  if (!checkEmail()) return;
+  if (!checkEmail(true)) return;
   try { await sendPasswordResetEmail(auth, em); msg("Reset email sent. Check your inbox.", true); }
   catch (err) { msg(ERR[err.code] || "Couldn't send the email. Try again."); }
 };
@@ -146,4 +148,5 @@ $("gs").onclick = function () {
 if (new URLSearchParams(location.search).get("expired")) msg("You were away for a while, so we signed you out to keep your account safe. Log in again.");
 
 // Already signed in? Skip this page.
-if (ready) onAuthStateChanged(auth, function (u) { if (u) done(u); });
+// (skipped while a sign-in button is working, so that sign-in gets recorded properly)
+if (ready) onAuthStateChanged(auth, function (u) { if (u && !signingIn) done(u); });

@@ -62,7 +62,7 @@ $("vchk").onclick = async function () {
   for (const r of refs) {
     const li = document.createElement("li"); li.textContent = r + ": checking…"; $("vres").appendChild(li);
     try {
-      const res = await fetch("https://bible-api.com/" + encodeURIComponent(r).replace(/%20/g, "+") + "?translation=kjv");
+      const res = await fetch("https://bible-api.com/" + encodeURI(r.replace(/ /g, "+")) + "?translation=kjv");
       const j = res.ok ? await res.json() : null;
       li.textContent = j && j.text ? "✓ " + r + ": " + j.text.replace(/\s+/g, " ").trim().slice(0, 80) + "…" : "✗ " + r + ": not found. Check the spelling.";
       li.className = j && j.text ? "good" : "bad";

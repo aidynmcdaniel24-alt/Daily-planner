@@ -110,7 +110,7 @@ var versePending = {};
 function loadVerse(ref, done) {
   if (verseCache[ref] || versePending[ref]) return;
   versePending[ref] = 1;
-  fetch("https://bible-api.com/" + encodeURIComponent(ref).replace(/%20/g, "+") + "?translation=kjv")
+  fetch("https://bible-api.com/" + encodeURI(ref.replace(/ /g, "+")) + "?translation=kjv")
     .then(function (r) { return r.ok ? r.json() : null; })
     .then(function (j) {
       if (!j || typeof j.text !== "string" || !j.text.trim() || j.text.length > 1200) return;
