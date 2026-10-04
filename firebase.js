@@ -9,6 +9,11 @@ const firebaseConfig = {
   appId: "1:204598190100:web:bf3a3021be31bc0a514701"
 };
 
+// ===== Admins =====
+// User IDs that see "Admin" in the profile menu. This only shows the button;
+// the real protection is the isAdmin line in firestore.rules (keep both lists the same).
+export const ADMINS = ["pmfwWWanIRRf0KcHStAY8e0Juk13"];
+
 // ===== App Check (blocks bots) =====
 // Paste your reCAPTCHA v3 SITE key here. Leave "PASTE_HERE" to turn App Check off.
 const APP_CHECK_KEY = "PASTE_HERE";

@@ -1,5 +1,5 @@
 // ===== Keeps the planner synced with your account =====
-import { auth, db, ready, push, syncDown, getLocal, kickAll, updateBoard, recentLogins, deleteLogins, takeNudges, sendFeedback } from "./firebase.js";
+import { auth, db, ready, push, syncDown, getLocal, kickAll, updateBoard, recentLogins, deleteLogins, takeNudges, sendFeedback, ADMINS } from "./firebase.js";
 import { onAuthStateChanged, signOut, sendEmailVerification, deleteUser } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
 import { doc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 
@@ -10,6 +10,7 @@ let timer;
 const LOGIN = new URL("login/login.html", import.meta.url).href;
 const SETTINGS = new URL("settings/settings.html", import.meta.url).href;
 const BOARD = new URL("leaderboard/leaderboard.html", import.meta.url).href;
+const ADMIN = new URL("admin/admin.html", import.meta.url).href;
 
 // script.js calls this every time it saves
 window.cloudSave = function (st) {
@@ -114,6 +115,7 @@ function buildMenu(opts) {
     const a = b.dataset.a;
     if (a === "set") location.href = SETTINGS;
     if (a === "lb") location.href = BOARD;
+    if (a === "admin") location.href = ADMIN;
     if (a === "out") logout();
     if (a === "in") goLogin();
     if (a === "focus" && window.toggleFocus) window.toggleFocus(true);
@@ -131,7 +133,7 @@ function showProfile(user) {
   buildMenu({
     name: name, sub: user.email || "",
     fill: function (el) { fillAvatar(el, user, name); },
-    items: (window.toggleFocus ? [["focus", "Focus mode"]] : []).concat([["lb", "Leaderboard"], ["set", "Settings"], ["fb", "Send feedback"], ["out", "Log out"]])
+    items: (window.toggleFocus ? [["focus", "Focus mode"]] : []).concat([["lb", "Leaderboard"], ["set", "Settings"]]).concat(ADMINS.indexOf(user.uid) > -1 ? [["admin", "Admin"]] : []).concat([["fb", "Send feedback"], ["out", "Log out"]])
   });
 }
 
