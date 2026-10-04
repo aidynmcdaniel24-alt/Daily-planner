@@ -13,6 +13,8 @@ function pairs(v) {
   return lines(v).map(function (l) { const i = l.lastIndexOf("|"); return i > 0 ? [l.slice(0, i).trim(), l.slice(i + 1).trim()] : null; })
     .filter(function (p) { return p && p[0] && p[1]; });
 }
+// The database can't store lists inside lists, so each quote is saved as { q: quote, a: author }
+function toObj(L) { return L.map(function (p) { return { q: p[0], a: p[1] }; }); }
 function pairText(L) { return L.map(function (p) { return p[0] + " | " + p[1]; }).join("\n"); }
 function msg(t, good) { $("er").hidden = !t; $("er").textContent = t || ""; $("er").className = good ? "okm" : "err"; }
 
@@ -38,10 +40,10 @@ function fill(c) {
 // ===== Read the form =====
 function read() {
   const moods = {}, courses = {};
-  Object.keys(MOOD_NAMES).forEach(function (m) { moods[m] = { q: pairs($("mq-" + m).value), v: lines($("mv-" + m).value) }; });
+  Object.keys(MOOD_NAMES).forEach(function (m) { moods[m] = { q: toObj(pairs($("mq-" + m).value)), v: lines($("mv-" + m).value) }; });
   Object.keys(COURSE_NAMES).forEach(function (k) { courses[k] = $("cr-" + k).value.trim() || DEFAULT_CONTENT.courses[k]; });
   return {
-    quotes: pairs($("quotes").value),
+    quotes: toObj(pairs($("quotes").value)),
     verses: lines($("verses").value),
     moods: moods,
     challenges: DEFAULT_CONTENT.challenges.map(function (d) {
@@ -82,7 +84,7 @@ $("f").onsubmit = async function (e) {
     localStorage.removeItem("apexcontent");
     msg("Saved! Everyone gets it within an hour. Refresh the planner to see it now.", true);
   } catch (err) {
-    msg(err.code === "permission-denied" ? "Not allowed. Make sure your user ID is in the admin line of your rules (see the top of this page)." : "Couldn't save. Check your internet and try again.");
+    msg(err.code === "permission-denied" ? "Not allowed. Make sure your user ID is in the admin line of your rules, and that you clicked Publish." : "Couldn't save (" + (err.code || err.message || "unknown error") + ").");
   }
   $("sv").disabled = false; $("sv").textContent = "Save for everyone";
 };

@@ -4,7 +4,7 @@ service cloud.firestore {
     function signedIn() { return request.auth != null; }
     function isMe(id) { return signedIn() && request.auth.uid == id; }
     // Your user ID goes here (copy it from the admin page: /admin/admin.html)
-    function isAdmin() { return signedIn() && request.auth.uid in ['PASTE_YOUR_USER_ID']; }
+    function isAdmin() { return signedIn() && request.auth.uid in ['pmfwWWanIRRf0KcHStAY8e0Juk13']; }
 
     // Each person's planner (saved as text)
     match /users/{userId} {

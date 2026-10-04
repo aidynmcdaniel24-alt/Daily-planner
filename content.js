@@ -80,14 +80,16 @@ var VERSE_TEXT = {
 
 // ===== Live content = database copy (if saved) on top of the defaults =====
 function isPair(x) { return Array.isArray(x) && typeof x[0] === "string" && typeof x[1] === "string"; }
+// Quotes come from the database as { q, a }; turn them into [quote, author]
+function toPairs(L) { return (L || []).map(function (x) { return isPair(x) ? x : (x && typeof x.q === "string" && typeof x.a === "string" && x.q && x.a) ? [x.q, x.a] : null; }).filter(Boolean); }
 function cleanContent(d) {
   var c = JSON.parse(JSON.stringify(DEFAULT_CONTENT));
   if (!d || typeof d !== "object") return c;
-  if (Array.isArray(d.quotes) && d.quotes.filter(isPair).length) c.quotes = d.quotes.filter(isPair);
+  if (Array.isArray(d.quotes) && toPairs(d.quotes).length) c.quotes = toPairs(d.quotes);
   if (Array.isArray(d.verses) && d.verses.filter(function (v) { return typeof v === "string" && v.trim(); }).length) c.verses = d.verses.filter(function (v) { return typeof v === "string" && v.trim(); });
   if (d.moods && typeof d.moods === "object") ["focus", "loss", "tired"].forEach(function (m) {
     var x = d.moods[m]; if (!x) return;
-    if (Array.isArray(x.q) && x.q.filter(isPair).length) c.moods[m].q = x.q.filter(isPair);
+    if (Array.isArray(x.q) && toPairs(x.q).length) c.moods[m].q = toPairs(x.q);
     if (Array.isArray(x.v) && x.v.filter(function (v) { return typeof v === "string"; }).length) c.moods[m].v = x.v.filter(function (v) { return typeof v === "string"; });
   });
   if (Array.isArray(d.challenges)) c.challenges = c.challenges.map(function (def) {
