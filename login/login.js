@@ -144,6 +144,9 @@ $("gs").onclick = function () {
   location.href = where();
 };
 
+// Opened from "Create account"? Start on the Sign up tab
+if (new URLSearchParams(location.search).get("mode") === "up") $("lt").querySelector('[data-m="up"]').click();
+
 // Signed out for being away too long?
 if (new URLSearchParams(location.search).get("expired")) msg("You were away for a while, so we signed you out to keep your account safe. Log in again.");
 

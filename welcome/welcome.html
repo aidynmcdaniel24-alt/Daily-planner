@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://apis.google.com https://www.google.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.googleusercontent.com https://www.gstatic.com; connect-src 'self' https://bible-api.com https://*.googleapis.com https://*.firebaseio.com https://*.firebaseapp.com https://www.google.com https://*.google.com https://apis.google.com https://www.gstatic.com https://*.gstatic.com; frame-src https://daily-planner-8801e.firebaseapp.com https://accounts.google.com https://www.google.com https://apis.google.com https://www.recaptcha.net; manifest-src 'self'; worker-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'">
+<title>Daily Planner</title>
+<meta name="description" content="A free daily planner for gamers: practice plans for your game, better sleep, and daily coding, with streaks and friends.">
+<link rel="manifest" href="../manifest.json">
+<meta name="theme-color" content="#0a0c12">
+<link rel="icon" href="../icons/icon-192.png">
+<link rel="apple-touch-icon" href="../icons/apple-touch-icon.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400..800&family=Geist+Mono:wght@500..600&display=swap">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body class="lp">
+<a class="skip" href="#main">Skip to content</a>
+<header class="lp-top" id="top">
+ <div class="lp-wrap lp-bar">
+  <a class="lp-brand" href="#main"><span class="logo"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M3 9h18M8 2v4M16 2v4M8.5 15l2.5 2.5 4.5-5"/></svg></span>Daily Planner</a>
+  <nav class="lp-nav" aria-label="Page sections">
+   <a href="#lanes">Features</a><a href="#how">How it works</a><a href="#games">Games</a><a href="#faq">FAQ</a>
+  </nav>
+  <div class="lp-acts">
+   <a class="lp-link" id="hdr-in" href="../login/login.html">Sign in</a>
+   <a class="btn-pri" id="hdr-go" href="../login/login.html?mode=up">Get started</a>
+  </div>
+ </div>
+</header>
+
+<main id="main">
+ <section class="lp-hero">
+  <div class="lp-wrap hero-grid">
+   <div class="hero-copy">
+    <p class="pill"><span class="dot"></span>Free, and works on your phone and PC</p>
+    <h1 class="hero-h">
+     <span class="ln"><i class="lane-dot g"></i>Play smarter.</span>
+     <span class="ln"><i class="lane-dot s"></i>Sleep better.</span>
+     <span class="ln"><i class="lane-dot c"></i>Code every day.</span>
+    </h1>
+    <p class="hero-sub">One checklist for your whole day. Tell it what you play and what you want to get better at, and it builds the plan for you.</p>
+    <div class="hero-ctas">
+     <a class="btn-pri big" href="../login/login.html?mode=up">Create free account</a>
+     <a class="btn-out big" href="../login/login.html">Sign in</a>
+     <button type="button" class="btn-ghost big" id="guest">Try without an account</button>
+    </div>
+   </div>
+
+   <div class="preview" aria-label="Example of a day in the planner">
+    <div class="pv-head"><b>Today</b><span class="pv-streak" id="pv-streak">4 day streak</span></div>
+    <div class="pv-lane"><p class="pv-t"><i class="lane-dot g"></i>Gaming</p><ul>
+     <li class="pv-i" data-lane="g"><span class="pv-box"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 8.5l2.5 2.5L12 5.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span>Aim warm-up, 10 min</span></li><li class="pv-i" data-lane="g"><span class="pv-box"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 8.5l2.5 2.5L12 5.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span>Ranked block, 60 min</span></li><li class="pv-i" data-lane="g"><span class="pv-box"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 8.5l2.5 2.5L12 5.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span>Review one loss</span></li></ul></div>
+    <div class="pv-lane"><p class="pv-t"><i class="lane-dot s"></i>Sleep</p><ul>
+     <li class="pv-i" data-lane="s"><span class="pv-box"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 8.5l2.5 2.5L12 5.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span>Screens off by 10:30 PM</span></li><li class="pv-i" data-lane="s"><span class="pv-box"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 8.5l2.5 2.5L12 5.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span>In bed by 11:00 PM</span></li></ul></div>
+    <div class="pv-lane"><p class="pv-t"><i class="lane-dot c"></i>Coding</p><ul>
+     <li class="pv-i" data-lane="c"><span class="pv-box"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 8.5l2.5 2.5L12 5.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span>Study 30 min</span></li><li class="pv-i" data-lane="c"><span class="pv-box"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 8.5l2.5 2.5L12 5.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span>Build one small thing</span></li></ul></div>
+    <div class="pv-bar"><i id="pv-fill"></i></div>
+   </div>
+  </div>
+ </section>
+
+ <section class="lp-sec" id="lanes">
+  <div class="lp-wrap">
+   <h2 class="sec-h reveal">Three parts of your day, one plan</h2>
+   <p class="sec-sub reveal">Each part has its own checklist and streak. Finish a list and your streak grows.</p>
+   <div class="lanes">
+    <article class="lane reveal" style="--lane:var(--c1)">
+     <h3><i class="lane-dot g"></i>Gaming</h3>
+     <p>Drills and a practice routine made for the game you actually play.</p>
+     <ul><li>Step-by-step drill guides</li><li>Score and rank tracker</li><li>Tilt tracker that tells you when to take a break</li></ul>
+    </article>
+    <article class="lane reveal" style="--lane:var(--c2)">
+     <h3><i class="lane-dot s"></i>Sleep</h3>
+     <p>A wind-down routine built around the bedtime you pick.</p>
+     <ul><li>Bedtime reminders</li><li>Sleep log with weekly hours</li><li>Add reminders to your phone's calendar</li></ul>
+    </article>
+    <article class="lane reveal" style="--lane:var(--c3)">
+     <h3><i class="lane-dot c"></i>Coding</h3>
+     <p>Small daily steps toward a career in tech, at your level.</p>
+     <ul><li>Course picks for your path</li><li>A new project idea every day</li><li>Learning log to track what you built</li></ul>
+    </article>
+   </div>
+   <ul class="extras reveal">
+    <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/></svg><div><b>Friends leaderboard</b><span>Share a code, compare streaks, send a nudge.</span></div></li>
+    <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/></svg><div><b>Focus mode</b><span>Hide everything except today's checklists.</span></div></li>
+    <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg><div><b>Weekly charts</b><span>See tasks done and sleep for the last 7 days.</span></div></li>
+    <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5"/><path d="M5 21h14"/></svg><div><b>Install it like an app</b><span>Works offline. Your plan syncs when you sign in.</span></div></li>
+   </ul>
+  </div>
+ </section>
+
+ <section class="lp-sec" id="how">
+  <div class="lp-wrap">
+   <h2 class="sec-h reveal">How it works</h2>
+   <ol class="steps-lp">
+    <li class="reveal"><span class="num">1</span><div><h3>Answer a few questions</h3><p>Your game, what you want to fix, when you're free, and your bedtime. Quick setup takes about 30 seconds.</p></div></li>
+    <li class="reveal"><span class="num">2</span><div><h3>Get your plan</h3><p>Checklists for gaming, sleep, and coding, with drills for your game and a project idea for today.</p></div></li>
+    <li class="reveal"><span class="num">3</span><div><h3>Check it off each day</h3><p>Keep your streaks going, log how sessions went, and watch your weekly charts climb.</p></div></li>
+   </ol>
+  </div>
+ </section>
+
+ <section class="lp-sec" id="games">
+  <div class="lp-wrap">
+   <h2 class="sec-h reveal">Made for whatever you play</h2>
+   <p class="sec-sub reveal">Type any game. The planner picks drills, score labels, and rank names that fit it.</p>
+   <ul class="chips reveal" id="chips"></ul>
+  </div>
+ </section>
+
+ <section class="lp-sec" id="faq">
+  <div class="lp-wrap narrow">
+   <h2 class="sec-h reveal">Questions</h2>
+   <div class="faq reveal">
+    <details><summary>Is it free?</summary><p>Yes. There's nothing to buy.</p></details>
+    <details><summary>Do I need an account?</summary><p>No. You can try it without one, and your plan saves on that device. An account lets you sync between your phone and PC and join the leaderboard.</p></details>
+    <details><summary>What games does it work with?</summary><p>Any game. Shooters, MOBAs, fighting games, chess, GeoGuessr, racing, rhythm games, Minecraft, and more. If it doesn't know your game, it uses a general practice plan.</p></details>
+    <details><summary>Does it work offline?</summary><p>Yes, once you've opened it. Install it from Settings to use it like a normal app.</p></details>
+    <details><summary>What do you do with my data?</summary><p>Your planner is only readable by you. We don't sell data or show ads. Read the <a href="../legal/privacy.html">privacy policy</a> for the details.</p></details>
+   </div>
+  </div>
+ </section>
+
+ <section class="lp-sec">
+  <div class="lp-wrap narrow">
+   <div class="final reveal">
+    <h2>Start tomorrow's plan tonight</h2>
+    <p>Setup takes less than a minute.</p>
+    <div class="hero-ctas center"><a class="btn-pri big" href="../login/login.html?mode=up">Create free account</a><a class="btn-out big" href="../login/login.html">Sign in</a></div>
+   </div>
+  </div>
+ </section>
+</main>
+
+<footer class="lp-foot">
+ <div class="lp-wrap foot-grid">
+  <div class="foot-brand"><a class="lp-brand" href="#main"><span class="logo"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M3 9h18M8 2v4M16 2v4M8.5 15l2.5 2.5 4.5-5"/></svg></span>Daily Planner</a><p>A daily plan for gaming, sleep, and coding.</p></div>
+  <nav aria-label="Product"><h4>Product</h4><a href="#lanes">Features</a><a href="#how">How it works</a><a href="#games">Games</a><a href="#faq">FAQ</a></nav>
+  <nav aria-label="Account"><h4>Account</h4><a href="../login/login.html">Sign in</a><a href="../login/login.html?mode=up">Create account</a><button type="button" class="foot-btn" id="guest2">Try without an account</button></nav>
+  <nav aria-label="Help"><h4>Help</h4><a href="https://github.com/aidynmcdaniel24-alt/Daily-planner/issues" rel="noopener" target="_blank">Report a bug</a><a href="../legal/privacy.html">Privacy</a><a href="../legal/terms.html">Terms</a></nav>
+ </div>
+ <div class="lp-wrap foot-base">&copy; <span id="yr">2026</span> Daily Planner</div>
+</footer>
+<script src="../genres.js"></script>
+<script src="welcome.js"></script>
+<script type="module" src="auth-check.js"></script>
+</body>
+</html>
