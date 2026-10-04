@@ -15,12 +15,12 @@ const firebaseConfig = {
 export const ADMINS = ["pmfwWWanIRRf0KcHStAY8e0Juk13"];
 
 // ===== App Check (blocks bots) =====
-// Paste your reCAPTCHA v3 SITE key here. Leave "PASTE_HERE" to turn App Check off.
+// Paste your Fraud Defense (reCAPTCHA Enterprise) SITE key here. Leave "PASTE_HERE" to turn App Check off.
 const APP_CHECK_KEY = "6LfxGt4tAAAAANDqYROoVKaG5VMVQbucuwms-Joc";
 
 // ===== You don't need to change anything below =====
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
-import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app-check.js";
+import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app-check.js";
 import { getAuth } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
 import { getFirestore, doc, getDoc, setDoc, addDoc, getDocs, deleteDoc, collection, query, orderBy, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 
@@ -29,7 +29,7 @@ export const app = initializeApp(firebaseConfig);
 if (APP_CHECK_KEY !== "PASTE_HERE") {
   // On Live Server, App Check prints a "debug token" in the console (F12). Add it in Firebase > App Check > Manage debug tokens.
   if (location.hostname === "127.0.0.1" || location.hostname === "localhost") self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
-  initializeAppCheck(app, { provider: new ReCaptchaV3Provider(APP_CHECK_KEY), isTokenAutoRefreshEnabled: true });
+  initializeAppCheck(app, { provider: new ReCaptchaEnterpriseProvider(APP_CHECK_KEY), isTokenAutoRefreshEnabled: true });
 }
 export const auth = getAuth(app);
 export const db = getFirestore(app);
