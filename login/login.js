@@ -71,20 +71,64 @@ async function done(user, fresh) {
   location.href = where();
 }
 
-// Log in / Sign up tabs
-$("lt").onclick = function (e) {
-  const b = e.target.closest("button"); if (!b) return;
-  mode = b.dataset.m;
-  [].forEach.call($("lt").children, function (x) { x.setAttribute("aria-selected", x === b); });
-  $("go").textContent = mode === "in" ? "Log in" : "Create account";
-  $("pw").autocomplete = mode === "in" ? "current-password" : "new-password";
-  $("ttl").textContent = mode === "in" ? "Welcome back" : "Create your account";
-  $("sub2").textContent = mode === "in" ? "Log in to sync your plan across devices." : "Save your plan and pick up on any device.";
-  $("fp").hidden = mode === "up";
-  $("pw").placeholder = mode === "in" ? "Your password" : "8+ characters, a letter and a number";
-  $("gg").textContent = mode === "in" ? "Continue with Google" : "Login with Google";
+// ===== Log in / Sign up switch (with a slide animation) =====
+const calm = matchMedia("(prefers-reduced-motion: reduce)").matches;
+let anims = [], target = "in";
+function applyMode(m) {
+  mode = target = m;
+  const up = m === "up";
+  $("lt").dataset.mode = m;
+  [].forEach.call($("lt").children, function (x) { x.setAttribute("aria-selected", x.dataset.m === m); });
+  $("go").textContent = up ? "Create account" : "Log in";
+  $("pw").autocomplete = up ? "new-password" : "current-password";
+  $("ttl").textContent = up ? "Create your account" : "Welcome back";
+  $("sub2").textContent = up ? "Save your plan and pick up on any device." : "Log in to sync your plan across devices.";
+  $("fp").hidden = up;
+  $("rules").hidden = !up;
+  $("pw").placeholder = up ? "Make a password" : "Your password";
+  $("ggt").textContent = up ? "Sign up with Google" : "Continue with Google";
+  $("swt").textContent = up ? "Already have an account?" : "New here?";
+  $("swb").textContent = up ? "Log in" : "Create an account";
+  checkRules();
   msg("");
+  history.replaceState(null, "", up ? "?mode=up" : location.pathname);
+}
+function setMode(m, animate) {
+  if (m === target) return;
+  target = m;
+  anims.forEach(function (x) { x.cancel(); }); anims = [];
+  if (m === mode) return;
+  if (!animate || calm || !document.body.animate) return applyMode(m);
+  const dir = m === "up" ? 1 : -1;          // Sign up slides in from the right, Log in from the left
+  const card = $("card"), body = $("ab");
+  const h0 = card.offsetHeight;
+  const out = body.animate([{ opacity: 1, transform: "none" }, { opacity: 0, transform: "translateX(" + (-28 * dir) + "px)" }],
+    { duration: 140, easing: "cubic-bezier(.4,0,1,1)", fill: "forwards" });
+  anims.push(out);
+  out.onfinish = function () {
+    applyMode(m);
+    const h1 = card.offsetHeight;
+    out.cancel();
+    anims = [
+      card.animate([{ height: h0 + "px" }, { height: h1 + "px" }], { duration: 260, easing: "cubic-bezier(.2,.8,.2,1)" }),
+      body.animate([{ opacity: 0, transform: "translateX(" + (28 * dir) + "px)" }, { opacity: 1, transform: "none" }],
+        { duration: 260, easing: "cubic-bezier(.2,.8,.2,1)" })
+    ];
+  };
+}
+$("lt").onclick = function (e) { const b = e.target.closest("button"); if (b) setMode(b.dataset.m, true); };
+$("lt").onkeydown = function (e) {
+  if (e.key === "ArrowRight" || e.key === "ArrowLeft") { const m = e.key === "ArrowRight" ? "up" : "in"; setMode(m, true); $("lt").querySelector('[data-m="' + m + '"]').focus(); }
 };
+$("swb").onclick = function () { setMode(target === "in" ? "up" : "in", true); };
+
+// Password rules (sign up only), ticked off as you type
+function checkRules() {
+  const pw = $("pw").value;
+  const ok = { len: pw.length >= 8, let: /[A-Za-z]/.test(pw), num: /[0-9]/.test(pw) };
+  [].forEach.call($("rules").children, function (li) { li.classList.toggle("ok", ok[li.dataset.r]); });
+}
+$("pw").addEventListener("input", checkRules);
 
 // Email and password
 $("f").onsubmit = async function (e) {
@@ -96,6 +140,7 @@ $("f").onsubmit = async function (e) {
   if (mode === "up" && (pw.length < 8 || !/[A-Za-z]/.test(pw) || !/[0-9]/.test(pw)))
     return msg("Use at least 8 characters with a letter and a number.");
   $("go").disabled = true; signingIn = true;
+  $("go").classList.add("busy"); $("go").textContent = mode === "in" ? "Logging in..." : "Creating account...";
   try {
     const r = mode === "in"
       ? await signInWithEmailAndPassword(auth, em, pw)
@@ -105,6 +150,7 @@ $("f").onsubmit = async function (e) {
   } catch (err) {
     msg(ERR[err.code] || "Something went wrong. Try again.");
     $("go").disabled = false; signingIn = false;
+    $("go").classList.remove("busy"); $("go").textContent = mode === "in" ? "Log in" : "Create account";
   }
 };
 
@@ -136,6 +182,7 @@ $("sh").onclick = function () {
   const show = $("pw").type === "password";
   $("pw").type = show ? "text" : "password";
   $("sh").textContent = show ? "Hide" : "Show";
+  $("sh").setAttribute("aria-label", show ? "Hide password" : "Show password");
 };
 
 // Guest
@@ -145,7 +192,7 @@ $("gs").onclick = function () {
 };
 
 // Opened from "Create account"? Start on the Sign up tab
-if (new URLSearchParams(location.search).get("mode") === "up") $("lt").querySelector('[data-m="up"]').click();
+if (new URLSearchParams(location.search).get("mode") === "up") applyMode("up");
 
 // Signed out for being away too long?
 if (new URLSearchParams(location.search).get("expired")) msg("You were away for a while, so we signed you out to keep your account safe. Log in again.");
