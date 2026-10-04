@@ -28,6 +28,18 @@ function gid(){return a.gt&&a.gtFor===(a.gm||"")?a.gt:aiOk()?a.gp.g:detectGame(a
 function G(){return genreOf({gn:a.gm,gg:gid(),gp:aiOk()?a.gp:null})}
 
 // ===== AI plan for the typed game (built-in plan is used until it arrives, or if it fails) =====
+// ===== Game tags =====
+// Each game you type becomes a tag like #Apex when you press Enter. The first tag is your main game.
+function games(){
+ if(!a.games){a.games=[];if(a.gm&&a.gm.trim())a.games.push(a.gm.trim());if(a.g2&&a.g2.trim())a.g2.split(/\s*,\s*/).forEach(function(x){if(x)a.games.push(x)})}
+ return a.games}
+function syncGames(){var L=games();a.gm=L[0]||"";a.g2=L.slice(1).join(", ").slice(0,60)}
+function addGame(t){t=String(t||"").replace(/^#+/,"").replace(/\s+/g," ").trim().slice(0,40);if(!t)return false;
+ var L=games();if(L.some(function(x){return x.toLowerCase()===t.toLowerCase()}))return false;
+ if(L.length>=5)return false;L.push(t);syncGames();return true}
+function tagsHTML(){var L=games();
+ return L.map(function(g,n){return'<span class="gtag'+(n===0?" main":"")+'"><button type="button" class="gt-name" data-i="'+n+'" '+(n===0?'aria-label="'+esc(g)+', your main game"':'title="Make this your main game" aria-label="Make '+esc(g)+' your main game"')+'>#'+esc(g)+(n===0?'<span class="gt-main">Main</span>':'')+'</button><button type="button" class="gt-x" data-x="'+n+'" aria-label="Remove '+esc(g)+'">\u00D7</button></span>'}).join("")}
+
 function startAI(){
  if(!window.AI||!a.gm||normGame(a.gm)===a.aiFor)return;
  var mine=a.aiFor=normGame(a.gm);a.aiBusy=true;a.gtUser=false;
@@ -47,8 +59,8 @@ var S=[
  {k:"mode",q:"How do you want to set up?",h:"Quick takes 30 seconds. Full builds a better plan.",t:"one",o:[["quick","Quick setup (4 questions)"],["full","Full setup"]]},
  {k:"nm",q:"What's your name?",t:"text"},
  {k:"goals",q:"What do you want to work on?",h:"Pick all that apply.",t:"multi",o:GOALS},
- {k:"gm",q:"What game do you play most?",h:"Type the name of any game.",t:"text",ph:"Example: Apex, chess, GeoGuessr, Rocket League",f:function(){return has("rank")}},
- {k:"g2",q:"Do you play a second game?",h:"Optional. Leave it blank to skip.",t:"text",opt:1,ph:"Example: Rocket League",f:rankFull},
+ {k:"gm",q:"What games do you play?",h:"Type a game and press Enter. Add up to 5. The first one is your main game.",t:"tags",ph:"Example: Apex, chess, GeoGuessr, Rocket League",f:function(){return has("rank")}},
+ {k:"g2",q:"",t:"text",opt:1,f:function(){return false}},
  {k:"gt",q:"What kind of game is it?",h:function(){return a.aiBusy?"Making a custom plan for "+a.gm+"\u2026 You can keep going.":aiOk()?"Custom plan ready. We guessed the type, change it if it's wrong.":"We guessed from the name. Change it if it's wrong."},t:"one",f:rankFull,
   o:function(){return GENRE_ORDER.map(function(g){return[g,GENRES[g].name]})}},
  {k:"rk",q:"How good are you right now?",t:"one",f:rankFull,
@@ -76,7 +88,7 @@ var S=[
   o:[["moti","Motivation"],["faith","Bible verses"],["mix","Mix of both"]]}
 ];
 function steps(){return S.filter(function(s){return!s.f||s.f()})}
-function ok(s){var v=a[s.k];if(s.opt)return true;if(s.t==="multi")return!!(v&&v.length);return!!(v&&String(v).trim())}
+function ok(s){var v=a[s.k];if(s.opt)return true;if(s.t==="tags")return games().length>0||!!($("ti")&&$("ti").value.trim());if(s.t==="multi")return!!(v&&v.length);return!!(v&&String(v).trim())}
 
 // ===== Build the plan from answers =====
 function drillIds(){return G().drills.map(function(d){return d.id})}
@@ -123,11 +135,26 @@ function draw(){var L=steps();if(i>=L.length){review();return}
  var s=L[i];
  $("stp").textContent="Question "+(i+1)+" of "+L.length;$("pg").style.width=(100*i/L.length)+"%";
  $("q").textContent=s.q;$("hint").textContent=(typeof s.h==="function"?s.h():s.h)||"";
- if(s.t==="text"){
+ if(s.t==="tags"){
+  $("ans").innerHTML='<div class="tagbox" id="tbx"><span id="tgs">'+tagsHTML()+'</span><input type="text" id="ti" maxlength="40" autocomplete="off" aria-describedby="hint"></div><p class="mute tagnote" id="tgn" role="status"></p>';
+  var ti=$("ti");ti.placeholder=games().length?"Add another game":"Example: Apex Legends";
+  function redraw(msg){$("tgs").innerHTML=tagsHTML();ti.placeholder=games().length?"Add another game":"Example: Apex Legends";$("tgn").textContent=msg||"";btn()}
+  ti.oninput=function(){if(/[,;]/.test(ti.value)){ti.value.split(/[,;]/).slice(0,-1).forEach(addGame);ti.value=ti.value.split(/[,;]/).pop();redraw()}btn()};
+  ti.onkeydown=function(e){
+   if(e.key==="Enter"){e.preventDefault();
+    if(ti.value.trim()){var before=games().length;var added=addGame(ti.value);ti.value="";if(added)redraw();else redraw(before>=5?"You can add up to 5 games.":"You already added that one.")}
+    else if(games().length){startAI();i++;draw()}}
+   else if(e.key==="Backspace"&&!ti.value&&games().length){games().pop();syncGames();redraw()}};
+  $("tbx").onclick=function(e){var x=e.target.closest(".gt-x"),nm=e.target.closest(".gt-name");
+   if(x){games().splice(+x.dataset.x,1);syncGames();redraw();ti.focus();return}
+   if(nm&&+nm.dataset.i>0){var L=games(),g=L.splice(+nm.dataset.i,1)[0];L.unshift(g);syncGames();redraw(g+" is now your main game.");return}
+   if(e.target===$("tbx"))ti.focus()};
+  ti.focus();
+ }else if(s.t==="text"){
   $("ans").innerHTML='<input type="text" id="ti" maxlength="40">';
   var ti=$("ti");ti.placeholder=s.ph||"Type here";ti.value=a[s.k]||"";
   ti.oninput=function(){a[s.k]=ti.value;btn()};
-  ti.onkeydown=function(e){if(e.key==="Enter"&&ok(s)){if(s.k==="gm")startAI();i++;draw()}};ti.focus();
+  ti.onkeydown=function(e){if(e.key==="Enter"&&ok(s)){i++;draw()}};ti.focus();
  }else{
   if(s.k==="gt"&&a.gtFor!==(a.gm||"")){a.gt=aiOk()?a.gp.g:detectGame(a.gm).g;a.gtFor=a.gm||""}
   if(s.k==="dr"){var ids=drillIds();a.dr=(a.dr&&a.drFor===gid()?a.dr:(a.wk||[])).filter(function(w){return ids.indexOf(w)>-1});a.drFor=gid()}
@@ -183,6 +210,6 @@ $("impf").onchange=function(){var f=this.files[0];this.value="";if(!f)return;
  r.readAsText(f)};
 
 // ===== Buttons =====
-$("nx").onclick=function(){if(i>=steps().length){finish();return}if((steps()[i]||{}).k==="gm")startAI();i++;draw()};
+$("nx").onclick=function(){if(i>=steps().length){finish();return}if((steps()[i]||{}).k==="gm"){if($("ti")&&$("ti").value.trim())addGame($("ti").value);syncGames();startAI()}i++;draw()};
 $("bk").onclick=function(){if(i>0){i--;draw()}};
 draw();
