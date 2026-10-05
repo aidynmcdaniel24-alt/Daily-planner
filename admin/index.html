@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://apis.google.com https://www.google.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.googleusercontent.com https://www.gstatic.com; connect-src 'self' https://bible-api.com https://*.googleapis.com https://*.firebaseio.com https://*.firebaseapp.com https://www.google.com https://*.google.com https://apis.google.com https://www.gstatic.com https://*.gstatic.com; frame-src https://daily-planner-8801e.firebaseapp.com https://accounts.google.com https://www.google.com https://apis.google.com https://www.recaptcha.net; manifest-src 'self'; worker-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'">
+<meta name="robots" content="noindex">
+<title>Admin</title>
+<link rel="icon" href="../icons/icon-192.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400..700&family=Geist+Mono:wght@500..600&display=swap">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<main class="admin">
+<a class="back" href="../home/">
+ <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+ Back to planner
+</a>
+<h1>Admin</h1>
+<p class="sub">Edit the app's content. Changes reach everyone within an hour.</p>
+
+<div class="card" id="who"><p class="mute" style="margin:0">Loading…</p></div>
+
+<form id="f" hidden>
+ <div class="card">
+  <h2>Motivational quotes</h2>
+  <p class="mute">One per line: <code>Quote | Author</code></p>
+  <textarea id="quotes" rows="10"></textarea>
+ </div>
+
+ <div class="card">
+  <h2>Bible verses</h2>
+  <p class="mute">One reference per line, like <code>Philippians 4:13</code>. The exact KJV text loads on its own.</p>
+  <textarea id="verses" rows="8"></textarea>
+  <div class="row"><button type="button" id="vchk">Check verses</button></div>
+  <ul class="vres" id="vres"></ul>
+ </div>
+
+ <div class="card">
+  <h2>Mood quotes and verses</h2>
+  <div id="moods"></div>
+ </div>
+
+ <div class="card">
+  <h2>Weekly challenges</h2>
+  <p class="mute">3 are picked each week from the ones turned on.</p>
+  <div id="chal"></div>
+ </div>
+
+ <div class="card">
+  <h2>What's new popup</h2>
+  <p class="mute">Change the version to show the popup to everyone again.</p>
+  <label class="l" for="nv">Version</label><input type="text" id="nv" maxlength="12">
+  <label class="l" for="ni" style="margin-top:10px">What's new (one per line)</label><textarea id="ni" rows="5"></textarea>
+ </div>
+
+ <div class="card">
+  <h2>Coding course suggestions</h2>
+  <div id="courses"></div>
+ </div>
+
+ <div class="card">
+  <h2>Extra blocked name words</h2>
+  <p class="mute">One per line. These are added to the built-in list.</p>
+  <textarea id="blocked" rows="5"></textarea>
+ </div>
+
+ <p class="err" id="er" hidden></p>
+ <div class="row savebar"><button type="button" id="rst">Reset to built-in</button><button type="submit" class="pri" id="sv">Save for everyone</button></div>
+</form>
+</main>
+<script src="../dialog.js"></script>
+<script src="../content.js"></script>
+<script type="module" src="admin.js"></script>
+</body>
+</html>

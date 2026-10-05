@@ -7,10 +7,10 @@ const ac = document.getElementById("ac"), lo = document.getElementById("lo"), pf
 const vb = document.getElementById("vb"), del = document.getElementById("del"), lout = document.getElementById("lout");
 const nb = document.getElementById("nb"), rl = document.getElementById("rl");
 let timer;
-const LOGIN = new URL("login/login.html", import.meta.url).href;
-const SETTINGS = new URL("settings/settings.html", import.meta.url).href;
-const BOARD = new URL("leaderboard/leaderboard.html", import.meta.url).href;
-const ADMIN = new URL("admin/admin.html", import.meta.url).href;
+const LOGIN = new URL("login/", import.meta.url).href;
+const SETTINGS = new URL("settings/", import.meta.url).href;
+const BOARD = new URL("leaderboard/", import.meta.url).href;
+const ADMIN = new URL("admin/", import.meta.url).href;
 
 // script.js calls this every time it saves
 window.cloudSave = function (st) {
@@ -31,12 +31,12 @@ async function clearAndLeave() {
   location.replace(LOGIN);
 }
 async function logout() {
-  if (!confirm("Log out? Your data stays saved in your account.")) return;
+  if (!(await ui.confirm("Log out?", "Your data stays saved in your account. Log back in anytime.", { ok: "Log out" }))) return;
   await clearAndLeave();
 }
 async function logoutAll() {
-  if (!confirm("Log out on every device, including this one?")) return;
-  try { await kickAll(auth.currentUser.uid); } catch (e) { alert("Couldn't reach the server. Try again."); return; }
+  if (!(await ui.confirm("Log out everywhere?", "This signs you out on every device, including this one.", { ok: "Log out everywhere", danger: true }))) return;
+  try { await kickAll(auth.currentUser.uid); } catch (e) { await ui.alert("Couldn't reach the server", "Check your internet and try again."); return; }
   await clearAndLeave();
 }
 function goLogin() { location.href = LOGIN; }
@@ -46,7 +46,7 @@ if (lo) lo.onclick = function () { auth.currentUser ? logout() : goLogin(); };
 // ===== Email verification banner =====
 async function checkVerified(user) {
   if (!vb) return;
-  const usesPassword = user.providerData.some(function (p) { return p.providerId === "password"; });
+  const usesPassword = (user.providerData || []).some(function (p) { return p.providerId === "password"; });
   if (!usesPassword) return;
   try { await user.reload(); } catch (e) {}
   if (auth.currentUser.emailVerified) return;
@@ -62,10 +62,10 @@ async function checkVerified(user) {
 async function deleteAccount() {
   const u = auth.currentUser; if (!u) return;
   if (Date.now() - Date.parse(u.metadata.lastSignInTime) > 5 * 60 * 1000) {
-    alert("For safety, log out and log back in, then delete your account within 5 minutes.");
+    await ui.alert("Please log in again first", "For safety, log out and log back in, then delete your account within 5 minutes.");
     return;
   }
-  if (prompt("This deletes your account and all saved data forever. Type DELETE to confirm.") !== "DELETE") return;
+  if ((await ui.ask("Delete your account?", "This deletes your account and all your saved data forever. It can't be undone. Type DELETE to confirm.", { input: "Type DELETE", match: "DELETE", ok: "Delete forever", danger: true })) !== "DELETE") return;
   try {
     await deleteLogins(u.uid);
     try { await deleteDoc(doc(db, "board", u.uid)); } catch (x) {}
@@ -77,9 +77,9 @@ async function deleteAccount() {
     ["apexplan", "apexlogin", "apexseen", "apexai"].forEach(function (k) { localStorage.removeItem(k); });
     location.replace(LOGIN);
   } catch (e) {
-    alert(e.code === "auth/requires-recent-login"
+    await ui.alert("Couldn't delete your account", e.code === "auth/requires-recent-login"
       ? "For safety, log out and log back in, then try again."
-      : "Couldn't delete your account. Try again.");
+      : "Something went wrong. Try again.");
   }
 }
 

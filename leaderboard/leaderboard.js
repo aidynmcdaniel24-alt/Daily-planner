@@ -9,7 +9,7 @@ let st = getLocal(), uid = null;
 // Theme
 if (st.th) document.documentElement.style.setProperty("--acc", st.th);
 if (st.md && st.md !== "auto") document.documentElement.setAttribute("data-theme", st.md);
-$("bk").onclick = function () { location.href = "../index.html"; };
+$("bk").onclick = function () { location.href = "../home/"; };
 
 function save() {
   st.ts = Date.now(); setLocal(st);
@@ -29,7 +29,7 @@ async function findCode(code) {
 
 // ===== Join / leave =====
 function showJoin() {
-  status('<h2>Join the leaderboard</h2><p class="mute" style="margin:6px 0 0">Friends you add will see your name and your best streak. Nothing else is shared.</p><div class="row"><button type="button" class="pri" id="jn">Join</button></div>');
+  status('<div class="empty-st"><span class="es-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0zM7 6H4a3 3 0 0 0 3 4M17 6h3a3 3 0 0 1-3 4"/></svg></span><h2>Join the leaderboard</h2><p class="mute">Friends you add will see your name and your streaks. Nothing else is shared.</p><button type="button" class="pri" id="jn">Join the leaderboard</button></div>');
   $("jn").onclick = async function () {
     this.disabled = true; this.textContent = "Joining…";
     try {
@@ -43,12 +43,12 @@ function showJoin() {
       render();
     } catch (e) {
       this.disabled = false; this.textContent = "Join";
-      alert("Couldn't join. Check your internet and try again.");
+      ui.alert("Couldn't join", "Check your internet and try again.");
     }
   };
 }
 $("lv").onclick = async function () {
-  if (!confirm("Leave the leaderboard? Friends won't see you anymore.")) return;
+  if (!(await ui.confirm("Leave the leaderboard?", "Friends won't see your streaks anymore. You can join again later.", { ok: "Leave", danger: true }))) return;
   try { await deleteDoc(doc(db, "board", uid)); } catch (e) {}
   delete st.lb; save(); showJoin();
 };
@@ -69,12 +69,12 @@ async function render() {
   $("cnt").textContent = (rows.length - 1) + (rows.length === 2 ? " friend" : " friends");
   $("lb").innerHTML = rows.map(function (r, i) {
     const me = r.code === st.lb.code;
-    return '<li class="' + (me ? "me" : "") + '"><span class="rk">' + (i + 1) + '</span><span class="av">' + esc(r.name.charAt(0).toUpperCase()) +
+    return '<li class="' + (me ? "me" : "") + '" style="--i:' + i + '"><span class="rk">' + (i + 1) + '</span><span class="av">' + esc(r.name.charAt(0).toUpperCase()) +
       '</span><span class="nm"><b>' + esc(r.name) + (me ? " (you)" : "") + '</b><span class="mute">Best ' + r.best + (r.best === 1 ? " day" : " days") + '</span></span>' +
       '<span class="sv"><b>' + r.streak + '</b><span class="mute">day streak</span></span>' +
       (me ? "" : '<span class="acts"><button type="button" class="nd" data-u="' + esc(r.uid) + '"' + (nudged(r.uid) ? " disabled" : "") + ' aria-label="Nudge ' + esc(r.name) + '">' + (nudged(r.uid) ? "Nudged" : "Nudge") + '</button>' +
         '<button type="button" class="rm" data-c="' + esc(r.code) + '" aria-label="Remove ' + esc(r.name) + '">Remove</button></span>') + "</li>";
-  }).join("") + (rows.length < 2 ? '<li class="empty mute">No friends yet. Share your code or add theirs below.</li>' : "");
+  }).join("") + (rows.length < 2 ? '<li class="empty mute">No friends yet. Share your code above, or add theirs below.</li>' : "");
 }
 function nudged(u) { return st.lb.nd && st.lb.nd[u] === new Date().toLocaleDateString("en-CA"); }
 $("lb").onclick = async function (e) {
@@ -132,12 +132,12 @@ $("cp").onclick = async function () {
 
 // ===== Start =====
 if (!ready) {
-  status('<p class="mute" style="margin:0">Accounts aren\'t set up yet, so the leaderboard is off.</p>');
+  status('<div class="empty-st"><span class="es-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0zM7 6H4a3 3 0 0 0 3 4M17 6h3a3 3 0 0 1-3 4"/></svg></span><h2>Leaderboard is off</h2><p class="mute">Accounts aren\'t set up yet, so the leaderboard is off.</p></div>');
 } else {
   onAuthStateChanged(auth, async function (user) {
     if (!user) {
-      status('<h2>Sign in to compete</h2><p class="mute" style="margin:6px 0 0">The leaderboard needs an account so friends can find you.</p><div class="row"><button type="button" class="pri" id="si">Sign in</button></div>');
-      $("si").onclick = function () { location.href = "../login/login.html"; };
+      status('<div class="empty-st"><span class="es-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0zM7 6H4a3 3 0 0 0 3 4M17 6h3a3 3 0 0 1-3 4"/></svg></span><h2>Sign in to compete</h2><p class="mute">The leaderboard needs an account so friends can find you. It only takes a minute.</p><button type="button" class="pri" id="si">Sign in</button></div>');
+      $("si").onclick = function () { location.href = "../login/"; };
       return;
     }
     uid = user.uid; st = getLocal();

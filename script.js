@@ -25,7 +25,7 @@ function upd(c){var n=TK(c).length,k=((st.dn||{})[td()+c]||[]).length;
  $("pc-"+c).textContent=k+"/"+n+" done";$("pb-"+c).style.width=(n?100*k/n:0)+"%";
  st.ok=st.ok||{};if(n>0&&k===n)st.ok[c+td()]=1;else delete st.ok[c+td()];
  var s=0,o=st.ok[c+td()]?0:1;while(st.ok[c+td(o)]){s++;o++}
- $("sk-"+c).textContent=s+" day streak";}
+ $("sk-"+c).textContent=s?s+(s===1?" day streak":" day streak"):"No streak yet";$("sk-"+c).classList.toggle("zero",!s);}
 function tasks(c){var d=(st.dn||{})[td()+c]||[];
  $("tk-"+c).innerHTML=TK(c).map(function(t,i){return '<label class="t"><input type="checkbox" data-c="'+c+'" data-i="'+i+'"'+(d.indexOf(i)>-1?" checked":"")+'><div><b>'+esc(t[0])+'</b><span>'+esc(t[1])+'</span></div></label>'}).join("");upd(c)}
 document.addEventListener("change",function(e){var t=e.target;if(t.type!=="checkbox"||!t.dataset.c)return;
@@ -171,8 +171,8 @@ function greet(){$("sb").textContent=st.nm?"Hi "+st.nm+". "+(st.gl?"Goal: "+st.g
 load();
 var setUp=st.done||st.nm||st.sk;
 // No account choice yet, or a guest who left before finishing setup: back to the sign-in page
-if(!st.acct||(st.acct==="guest"&&!setUp))location.replace("welcome/welcome.html");
-else if(!setUp)location.replace("onboarding/onboarding.html");
+if(!st.acct||(st.acct==="guest"&&!setUp))location.replace("../");
+else if(!setUp)location.replace("../setup/");
 setInterval(function(){setQ()},60000);
 if(st.th)th(st.th);
 $("fg").value=(st.fg||{})[td()]||"";
@@ -209,4 +209,4 @@ function tour(){
 if(st.tour){delete st.tour;save();setTimeout(tour,400)}
 
 // ===== Installable app =====
-if("serviceWorker" in navigator)addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){})});
+if("serviceWorker" in navigator)addEventListener("load",function(){navigator.serviceWorker.register("../sw.js").catch(function(){})});

@@ -4,10 +4,10 @@ function td(){return new Date().toLocaleDateString("en-CA")}
 function load(){try{st=JSON.parse(localStorage.getItem("apexplan")||"{}")}catch(e){st={}}}
 function save(){st.ts=Date.now();try{localStorage.setItem("apexplan",JSON.stringify(st))}catch(e){}if(window.cloudSave)window.cloudSave(st)}
 load();
-if(!st.acct)location.replace("../login/login.html");
+if(!st.acct)location.replace("../login/");
 
 // ===== Back button =====
-$("bk").onclick=function(){location.href="../index.html"};
+$("bk").onclick=function(){location.href="../home/"};
 
 // ===== Look and theme color =====
 function th(c){document.documentElement.style.setProperty("--acc",c)}
@@ -49,9 +49,9 @@ drawFd();
  tp(el,p[2])});
 
 // ===== Your data =====
-$("rd").onclick=function(){location.href="../onboarding/onboarding.html"};
-$("rs").onclick=function(){
- if(!confirm("Uncheck everything on today's checklists?"))return;
+$("rd").onclick=function(){location.href="../setup/"};
+$("rs").onclick=async function(){
+ if(!(await ui.confirm("Reset today's checklists?","This unchecks everything on today's checklists.",{ok:"Reset"})))return;
  if(st.dn)["gaming","sleep","coding"].forEach(function(c){delete st.dn[td()+c]});
  save();$("rs").textContent="Today's checklists reset"};
 $("ex").onclick=function(){
@@ -60,17 +60,16 @@ $("ex").onclick=function(){
  setTimeout(function(){URL.revokeObjectURL(a.href)},1000)};
 $("im").onclick=function(){$("if").click()};
 $("if").onchange=function(){var f=this.files[0];this.value="";if(!f)return;
- var r=new FileReader();r.onload=function(){try{var d=JSON.parse(r.result);
-  if(!d||typeof d!=="object"||Array.isArray(d))throw 0;
-  if(!confirm("Replace your current data with this file?"))return;
-  d.acct=st.acct;st=d;save();location.reload()}catch(e){$("im").textContent="Not a valid file"}};
+ var r=new FileReader();r.onload=async function(){var d;try{d=JSON.parse(r.result);if(!d||typeof d!=="object"||Array.isArray(d))throw 0}catch(e){$("im").textContent="Not a valid file";return}
+  if(!(await ui.confirm("Replace your data?","Your current planner data will be replaced with this file.",{ok:"Replace",danger:true})))return;
+  d.acct=st.acct;st=d;save();location.reload()};
  r.readAsText(f)};
 
 // ===== Calendar reminders (.ics file) =====
 $("ics").onclick=function(){var r=st.rm||{},ev=[],d=new Date(),day=d.getFullYear()+pad(d.getMonth()+1)+pad(d.getDate()),stamp=new Date().toISOString().replace(/[-:]/g,"").split(".")[0]+"Z";
  if(r.b)ev.push(["Bedtime: start winding down","Screens off soon. Your planner's sleep checklist is waiting.",r.b,"bed"]);
  if(r.s)ev.push(["Study time","Time for your coding session.",r.s,"study"]);
- if(!ev.length){alert("Set a bedtime or study reminder above first.");return}
+ if(!ev.length){ui.alert("No reminders yet","Set a bedtime or study reminder above first.");return}
  var L=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Daily Planner//EN","CALSCALE:GREGORIAN"];
  ev.forEach(function(e){var t=e[2].replace(":","")+"00";
   L.push("BEGIN:VEVENT","UID:planner-"+e[3]+"@daily-planner","DTSTAMP:"+stamp,"DTSTART:"+day+"T"+t,"DURATION:PT15M","RRULE:FREQ=DAILY",

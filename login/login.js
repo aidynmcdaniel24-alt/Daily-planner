@@ -58,7 +58,7 @@ $("em").addEventListener("input", function () { if (this.getAttribute("aria-inva
 
 function where() {
   const s = getLocal();
-  return (s.done || s.nm || s.sk) ? "../index.html" : "../onboarding/onboarding.html";
+  return (s.done || s.nm || s.sk) ? "../home/" : "../setup/";
 }
 
 // After signing in: sync data, then open the planner (or setup if new)
@@ -91,7 +91,8 @@ function applyMode(m) {
   $("swb").textContent = up ? "Log in" : "Create an account";
   checkRules();
   msg("");
-  history.replaceState(null, "", up ? "?mode=up" : location.pathname);
+  history.replaceState(null, "", up ? "../signup/" : "../login/");
+  document.title = up ? "Sign up · Daily Planner" : "Log in · Daily Planner";
 }
 function setMode(m, animate) {
   if (m === target) return;
@@ -192,7 +193,7 @@ $("gs").onclick = function () {
 };
 
 // Opened from "Create account"? Start on the Sign up tab
-if (new URLSearchParams(location.search).get("mode") === "up") applyMode("up");
+if (/\/signup\/?$/.test(location.pathname) || new URLSearchParams(location.search).get("mode") === "up") applyMode("up");
 
 // Signed out for being away too long?
 if (new URLSearchParams(location.search).get("expired")) msg("You were away for a while, so we signed you out to keep your account safe. Log in again.");

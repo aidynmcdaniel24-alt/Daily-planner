@@ -47,12 +47,13 @@ var DEFAULT_CONTENT = {
   {id:"all",   text:"Finish all 3 checklists on the same day, twice", goal:2, on:true},
   {id:"rank",  text:"Log your rank 2 times", goal:2, on:true}
  ],
- // "What's new" popup. Change v and items when you release an update.
- news: { v: "1.3", items: [
-  "Custom plans for any game: type any game and AI builds drills, score labels, and rank names for it",
-  "A new coding project idea every day, made for your level",
-  "Bible verses now load the exact KJV text"
- ]},
+ // "What's new" popup. To show it after a commit: raise v (1.4 -> 1.5) and change the items.
+ // (If the admin page has a higher version saved, that one shows instead.)
+ news: { v: "1.4", items: [
+  "A brand new home page: today's progress rings, a Next up card, and a cleaner layout",
+  "Break timer now has 5, 10 and 15 minute options and keeps time in the background",
+  "Bedtime countdown, sleep history bars, and new Summary stats",
+  "Press ? to see keyboard shortcuts, and N to check off your next task" ]},
  // Course suggestions for the coding checklist, by tech path
  courses: { web: "The Odin Project", py: "CS50P (free Harvard Python course)", game: "Godot docs or Unity Learn",
             it: "Google IT Support or Professor Messer", sec: "TryHackMe beginner path", ns: "CS50x (free Harvard intro course)" },
@@ -82,6 +83,12 @@ var VERSE_TEXT = {
 function isPair(x) { return Array.isArray(x) && typeof x[0] === "string" && typeof x[1] === "string"; }
 // Quotes come from the database as { q, a }; turn them into [quote, author]
 function toPairs(L) { return (L || []).map(function (x) { return isPair(x) ? x : (x && typeof x.q === "string" && typeof x.a === "string" && x.q && x.a) ? [x.q, x.a] : null; }).filter(Boolean); }
+// true if version a is higher than version b ("1.10" > "1.9")
+function newer(a, b) {
+  var x = String(a).split("."), y = String(b).split(".");
+  for (var i = 0; i < Math.max(x.length, y.length); i++) { var p = parseInt(x[i], 10) || 0, q = parseInt(y[i], 10) || 0; if (p !== q) return p > q; }
+  return false;
+}
 function cleanContent(d) {
   var c = JSON.parse(JSON.stringify(DEFAULT_CONTENT));
   if (!d || typeof d !== "object") return c;
@@ -96,7 +103,10 @@ function cleanContent(d) {
     var x = d.challenges.filter(function (y) { return y && y.id === def.id; })[0];
     return x ? { id: def.id, text: typeof x.text === "string" && x.text ? x.text : def.text, goal: Math.max(1, Math.min(50, parseInt(x.goal, 10) || def.goal)), on: x.on !== false } : def;
   });
-  if (d.news && typeof d.news.v === "string" && Array.isArray(d.news.items)) c.news = { v: d.news.v, items: d.news.items.filter(function (i) { return typeof i === "string"; }) };
+  // "What's new": whichever has the higher version wins (this file or the admin page),
+  // so bumping the version here and committing shows the popup to everyone.
+  if (d.news && typeof d.news.v === "string" && Array.isArray(d.news.items) && newer(d.news.v, c.news.v))
+    c.news = { v: d.news.v, items: d.news.items.filter(function (i) { return typeof i === "string"; }) };
   if (d.courses && typeof d.courses === "object") Object.keys(c.courses).forEach(function (k) { if (typeof d.courses[k] === "string" && d.courses[k]) c.courses[k] = d.courses[k]; });
   if (Array.isArray(d.blocked)) c.blocked = d.blocked.filter(function (w) { return typeof w === "string"; });
   return c;

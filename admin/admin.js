@@ -72,7 +72,7 @@ $("vchk").onclick = async function () {
 };
 
 // ===== Save =====
-$("rst").onclick = function () { if (confirm("Fill the form with the built-in content? (Nothing saves until you click Save.)")) fill(cleanContent(null)); };
+$("rst").onclick = async function () { if (await ui.confirm("Use the built-in content?", "This fills the form with the built-in content. Nothing saves until you click Save.", { ok: "Fill form" })) fill(cleanContent(null)); };
 $("f").onsubmit = async function (e) {
   e.preventDefault(); msg("");
   const data = read();
@@ -95,7 +95,7 @@ if (!ready) {
 } else {
   onAuthStateChanged(auth, async function (user) {
     if (!user) {
-      $("who").innerHTML = '<p style="margin:0">Sign in first, then come back to this page.</p><div class="row"><a class="pri btnlink" href="../login/login.html">Sign in</a></div>';
+      $("who").innerHTML = '<p style="margin:0">Sign in first, then come back to this page.</p><div class="row"><a class="pri btnlink" href="../login/">Sign in</a></div>';
       return;
     }
     $("who").innerHTML = '<h2>You\'re signed in</h2><p class="mute">To be allowed to save, your user ID must be in the admin line of <code>firestore.rules</code>.</p>' +

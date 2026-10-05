@@ -36,7 +36,7 @@ function drillHTML(d) {
 function drills() {
   var today = drillFor(foc);
   $("dgt").innerHTML = drillHTML(today);
-  $("dga").innerHTML = genreOf(st).drills.filter(function (d) { return d !== today; }).map(function (d) { return '<div class="dgi">' + drillHTML(d) + "</div>"; }).join("");
+  $("dga").innerHTML = genreOf(st).drills.filter(function (d) { return d.name !== today.name; }).map(function (d) { return '<div class="dgi">' + drillHTML(d) + "</div>"; }).join("");
 }
 drills();
 

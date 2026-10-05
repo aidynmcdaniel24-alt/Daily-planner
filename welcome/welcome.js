@@ -5,9 +5,12 @@ if (st.th) document.documentElement.style.setProperty("--acc", st.th);
 var reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
 $("yr").textContent = new Date().getFullYear();
 
+// Opened as an installed app and already set up? Go straight to the planner
+if (st.acct && (st.done || st.nm || st.sk) && matchMedia("(display-mode: standalone), (display-mode: window-controls-overlay)").matches) location.replace("home/");
+
 // Already using the planner? Point the header button there
 if (st.acct && (st.done || st.nm || st.sk)) {
-  $("hdr-go").textContent = "Open my planner"; $("hdr-go").href = "../index.html";
+  $("hdr-go").textContent = "Open my planner"; $("hdr-go").href = "home/";
   $("hdr-in").hidden = true;
 }
 
@@ -15,7 +18,7 @@ if (st.acct && (st.done || st.nm || st.sk)) {
 function guest() {
   st.acct = "guest";
   try { localStorage.setItem("apexplan", JSON.stringify(st)); } catch (e) {}
-  location.href = (st.done || st.nm || st.sk) ? "../index.html" : "../onboarding/onboarding.html";
+  location.href = (st.done || st.nm || st.sk) ? "home/" : "setup/";
 }
 $("guest").onclick = guest; $("guest2").onclick = guest;
 

@@ -25,11 +25,20 @@ a:focus-visible{outline:2px solid var(--acc);outline-offset:3px}
  <p class="code">404</p>
  <h1>This page took a wrong rotation</h1>
  <p>The page you're looking for doesn't exist or was moved.</p>
- <a id="home" href="/">Back to my planner</a>
+ <a id="home" href="/">Back to Daily Planner</a>
 </main>
 <script>
-// On GitHub Pages project sites, home is /repo-name/ instead of /
-if(location.hostname.slice(-10)==="github.io"){var seg=location.pathname.split("/")[1];if(seg)document.getElementById("home").href="/"+seg+"/"}
+// Old page addresses (from before the site had clean links) go to their new home
+(function(){
+ var gh=location.hostname.slice(-10)==="github.io",parts=location.pathname.split("/"),base="/";
+ if(gh&&parts[1])base="/"+parts[1]+"/";
+ var rest=location.pathname.slice(base.length),map={
+  "index.html":"home/","welcome/welcome.html":"","login/login.html":"login/","onboarding/onboarding.html":"setup/","onboarding/":"setup/","onboarding":"setup/",
+  "settings/settings.html":"settings/","leaderboard/leaderboard.html":"leaderboard/","admin/admin.html":"admin/",
+  "legal/privacy.html":"privacy/","legal/terms.html":"terms/","home":"home/","signup":"signup/","login":"login/"};
+ if(rest in map){var q=location.search;if(rest==="login/login.html"&&/mode=up/.test(q)){map[rest]="signup/";q=""}location.replace(base+map[rest]+q+location.hash);return}
+ document.getElementById("home").href=base;
+})();
 </script>
 </body>
 </html>
