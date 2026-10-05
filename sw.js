@@ -1,7 +1,7 @@
 // ===== Offline support =====
 // Saves the app's own files so it opens fast and works without internet.
 // Change the version number when you update files, so phones get the new ones.
-const CACHE = "planner-v30";
+const CACHE = "planner-v31";
 const FILES = [
   "./", "./index.html", "./style.css", "./script.js", "./genres.js", "./content.js", "./extras.js", "./timepicker.js", "./sync.js", "./firebase.js", "./ai.js", "./remote.js", "./legal.js", "./home.js", "./dialog.js",
   "./home/", "./login/", "./login/login.js", "./signup/", "./setup/", "./setup/setup.js",

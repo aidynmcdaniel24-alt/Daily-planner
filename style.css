@@ -1072,3 +1072,4 @@ details.tv[open]>*:not(summary){animation:fadeUp .3s ease-out}
  .home .card:hover,.tile:hover{border-color:var(--line)}
 }
 @media (min-width:600px) and (max-width:899px){.side{display:grid;grid-template-columns:1fr 1fr;gap:0 14px;align-items:start}.side>.card:only-child{grid-column:1/-1}}
+.news{max-height:min(52vh,460px);overflow-y:auto;padding-right:6px}.news li{font-size:14px;line-height:1.5}

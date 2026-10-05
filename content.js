@@ -49,11 +49,20 @@ var DEFAULT_CONTENT = {
  ],
  // "What's new" popup. To show it after a commit: raise v (1.4 -> 1.5) and change the items.
  // (If the admin page has a higher version saved, that one shows instead.)
- news: { v: "1.4", items: [
-  "A brand new home page: today's progress rings, a Next up card, and a cleaner layout",
-  "Break timer now has 5, 10 and 15 minute options and keeps time in the background",
-  "Bedtime countdown, sleep history bars, and new Summary stats",
-  "Press ? to see keyboard shortcuts, and N to check off your next task" ]},
+ news: { v: "1.5", items: [
+  "Brand new home page: progress rings for today, a Next up card, and a cleaner two-column layout",
+  "New login and sign up page with smooth switching between the two",
+  "Pick your games as #tags during setup, and add more than one game",
+  "Break timer: 5, 10 or 15 minutes, pause and resume, and a sound when it's done",
+  "Bedtime countdown, sleep history bars, and new stats on the Summary tab",
+  "Redesigned Settings, Leaderboard and Setup pages",
+  "Pop-ups that match the app instead of plain browser boxes",
+  "Smooth animations everywhere (they turn off if your device is set to reduce motion)",
+  "Cleaner links like /home, /login and /settings",
+  "Clearer Privacy Policy and Terms of Use",
+  "Press ? for keyboard shortcuts, and N to check off your next task",
+  "Lots of fixes for phones, tablets and big screens"
+ ]},
  // Course suggestions for the coding checklist, by tech path
  courses: { web: "The Odin Project", py: "CS50P (free Harvard Python course)", game: "Godot docs or Unity Learn",
             it: "Google IT Support or Professor Messer", sec: "TryHackMe beginner path", ns: "CS50x (free Harvard intro course)" },

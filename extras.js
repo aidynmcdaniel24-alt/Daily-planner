@@ -239,7 +239,7 @@ function whatsNew() {
   d.innerHTML = '<form method="dialog"><p class="mute" style="margin:0">Version ' + esc(N.v) + '</p><h2>What\'s new</h2><ul class="news">' +
     N.items.map(function (n) { return "<li>" + esc(n) + "</li>"; }).join("") + '</ul><div class="row"><button class="pri" type="submit">Got it</button></div></form>';
   d.addEventListener("close", function () { d.remove(); });
-  document.body.appendChild(d); d.showModal();
+  document.body.appendChild(d); d.showModal(); d.querySelector(".pri").focus();
 }
 setTimeout(whatsNew, 600);
 
