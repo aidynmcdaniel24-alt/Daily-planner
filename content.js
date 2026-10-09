@@ -49,7 +49,9 @@ var DEFAULT_CONTENT = {
  ],
  // "What's new" popup. To show it after a commit: raise v (1.4 -> 1.5) and change the items.
  // (If the admin page has a higher version saved, that one shows instead.)
- news: { v: "1.5", items: [
+ news: { v: "1.6", items: [
+  "Coding tab upgrade: a daily coding drill, a focus session timer, and stats for your week",
+  "Tip of the day and a list of helpful free sites, picked for your tech path",
   "Brand new home page: progress rings for today, a Next up card, and a cleaner two-column layout",
   "New login and sign up page with smooth switching between the two",
   "Pick your games as #tags during setup, and add more than one game",
@@ -172,3 +174,103 @@ var PROJECTS = [
  ["w","Crosshair preview","Pick color, size, and gap with sliders and see a crosshair update live."]
 ];
 
+
+// ----- Coding drills (like the gaming drills). paths: which tech paths it fits ("all" = everyone) -----
+var CODE_DRILLS = [
+ {name:"Read the error first", time:"10 min", paths:["all"],
+  steps:["Run something that breaks, or open an old bug.","Read the whole error message out loud, bottom line first.","Find the file and line number it points to.","Write one sentence: what you think went wrong.","Fix it, then run it again to prove it."],
+  tip:"Most errors tell you exactly where to look. Beginners skip reading them."},
+ {name:"Rubber duck debugging", time:"10 min", paths:["all"],
+  steps:["Pick code that isn't working the way you want.","Explain it line by line, out loud, like you're teaching someone.","Stop at the first line you can't explain clearly.","That's usually where the bug is. Test that line."],
+  tip:"Saying it out loud forces you to notice what you skipped over."},
+ {name:"Type it, don't paste it", time:"15 min", paths:["all"],
+  steps:["Find a short example from a tutorial or the docs.","Type it out by hand instead of copying.","Change one thing and guess what will happen before you run it.","Run it and check if you were right."],
+  tip:"Typing builds memory. Pasting builds nothing."},
+ {name:"Rebuild it from memory", time:"20 min", paths:["all"],
+  steps:["Pick something small you made in the last few days.","Close it. Start a new empty file.","Build it again without looking.","Only peek when you're truly stuck, and note what you forgot."],
+  tip:"The parts you forgot are exactly what to practice next."},
+ {name:"Make it cleaner", time:"15 min", paths:["all"],
+  steps:["Open code you wrote before.","Rename unclear variables so they say what they hold.","Split one long block into a small function.","Delete anything that isn't used. Make sure it still runs."],
+  tip:"Clean code is code you can still read next week."},
+ {name:"One practice problem", time:"20 min", paths:["all"],
+  steps:["Open Exercism or Codewars and pick one easy problem.","Write the steps in plain words before any code.","Solve it, even if it's messy.","Then read 2 other people's solutions and note one trick."],
+  tip:"Reading other solutions is where most of the learning happens."},
+ {name:"Read the docs", time:"10 min", paths:["all"],
+  steps:["Pick one thing you used today (a function, tag, or command).","Look it up in the official docs.","Find one option or feature you didn't know about.","Try it in a tiny example."],
+  tip:"Docs feel slow at first, but they're faster than guessing."},
+ {name:"Git basics", time:"10 min", paths:["all"],
+  steps:["Make a small change to a project.","Check what changed with git status and git diff.","Commit it with a clear message, like \"Add score reset button\".","Push it to GitHub."],
+  tip:"Small commits with clear messages make mistakes easy to undo."},
+ {name:"Use the browser DevTools", time:"15 min", paths:["web"],
+  steps:["Open any page you built and press F12.","In Elements, change a color or size live.","In Console, run document.title and one line of your own.","Find one error or warning and fix it in your code."],
+  tip:"DevTools lets you test a fix before you write it."},
+ {name:"Copy a small piece of UI", time:"25 min", paths:["web"],
+  steps:["Find a button, card, or nav bar you like on a real site.","Rebuild it with your own HTML and CSS.","Make it look right on a phone width too.","Compare side by side and fix one difference."],
+  tip:"Copying real designs teaches layout faster than tutorials."},
+ {name:"Test your function", time:"15 min", paths:["py"],
+  steps:["Write a small function, like one that adds tax to a price.","Under it, write 3 assert lines with answers you know are right.","Add one weird case: 0, a negative, or empty input.","Run it. Fix the function until every assert passes."],
+  tip:"If you can't write a test for it, you're not sure what it should do yet."},
+ {name:"Play in the Python shell", time:"10 min", paths:["py"],
+  steps:["Open a terminal and type python.","Try 5 string methods on a word, like .upper() and .split().","Use dir() and help() on something you don't know.","Write down the one you'll use next."],
+  tip:"The shell is the fastest way to answer \"what does this do?\""},
+ {name:"Make one mechanic", time:"30 min", paths:["game"],
+  steps:["Pick one move: jump, dash, or shoot.","Make it work in a blank scene with just a box.","Tweak the numbers until it feels good.","Write the best numbers down so you can reuse them."],
+  tip:"Games are built one small mechanic at a time."},
+ {name:"Command line practice", time:"15 min", paths:["it","sec","ns"],
+  steps:["Open a terminal.","Make a folder, move into it, and create 3 files.","List, rename, and delete them using commands only.","Look up one new command and try it."],
+  tip:"Getting comfortable in the terminal pays off in every tech job."},
+ {name:"One hands-on lab", time:"30 min", paths:["sec","it"],
+  steps:["Open TryHackMe or OverTheWire.","Do one beginner room or level.","Write down every command you used and what it did.","Read the official walkthrough after and note one thing you missed."],
+  tip:"Your notes become your own cheat sheet."},
+ {name:"Learn one network thing", time:"10 min", paths:["it","sec"],
+  steps:["Pick one: DNS, DHCP, HTTP, or SSH.","Read what it does and what port it uses.","Explain it in 2 sentences in your learning log.","Find it in action on your own computer if you can."],
+  tip:"Networking shows up in almost every IT and security question."}
+];
+
+// ----- Coding tips (one shows each day) -----
+var CODE_TIPS = [
+ "Code a little every day. 20 minutes daily beats 3 hours once a week.",
+ "Stuck for more than 20 minutes? Take a short walk, then explain the problem out loud.",
+ "Build small things you actually want to use. You'll finish them.",
+ "Google the exact error message in quotes. Someone has seen it before.",
+ "Name variables for what they hold: playerScore, not x.",
+ "Save often and commit often. Future you will thank you.",
+ "Don't watch tutorials back to back. Watch one, then build something without it.",
+ "Break big tasks into steps so small they feel too easy.",
+ "Read your code out loud. Bugs hide in the parts you skim.",
+ "Keep a list of things you learned. It's proof you're getting better.",
+ "Copying code is fine if you can explain every line.",
+ "When something works, change one thing and see what breaks. That's how you learn why.",
+ "Use print statements to see what your code is actually doing.",
+ "Ask for help with what you tried, what you expected, and what happened.",
+ "Finish projects, even ugly ones. Finished beats perfect.",
+ "Learn your editor's shortcuts. Ctrl+D and Ctrl+/ save tons of time.",
+ "Rest matters. Tired brains write buggy code.",
+ "Compare yourself to you from last month, not to other people.",
+ "Put your projects on GitHub. It becomes your portfolio.",
+ "If a fix feels like magic, look up why it worked."
+];
+
+// ----- Helpful sites: [name, url, what it's for, group, paths] -----
+var CODE_SITES = [
+ ["freeCodeCamp","https://www.freecodecamp.org/","Free courses with hands-on lessons","Learn",["web","py","ns"]],
+ ["The Odin Project","https://www.theodinproject.com/","Full free path to web developer","Learn",["web"]],
+ ["CS50x","https://cs50.harvard.edu/x/","Harvard's free intro to computer science","Learn",["all"]],
+ ["CS50P","https://cs50.harvard.edu/python/","Harvard's free Python course","Learn",["py","ns"]],
+ ["Automate the Boring Stuff","https://automatetheboringstuff.com/","Free Python book for useful scripts","Learn",["py"]],
+ ["roadmap.sh","https://roadmap.sh/","Step-by-step maps for every tech path","Learn",["all"]],
+ ["Godot docs","https://docs.godotengine.org/","Free game engine with great tutorials","Learn",["game"]],
+ ["Unity Learn","https://learn.unity.com/","Free official Unity courses","Learn",["game"]],
+ ["Professor Messer","https://www.professormesser.com/","Free CompTIA A+, Network+ and Security+ videos","Learn",["it","sec"]],
+ ["TryHackMe","https://tryhackme.com/","Beginner hacking labs in your browser","Practice",["sec","it"]],
+ ["OverTheWire","https://overthewire.org/wargames/","Command line and security games","Practice",["sec","it"]],
+ ["Exercism","https://exercism.org/","Free practice problems with mentors","Practice",["all"]],
+ ["Codewars","https://www.codewars.com/","Short coding challenges by level","Practice",["all"]],
+ ["Frontend Mentor","https://www.frontendmentor.io/","Real designs to build with HTML and CSS","Practice",["web"]],
+ ["MDN Web Docs","https://developer.mozilla.org/","The best reference for HTML, CSS and JS","Docs",["web"]],
+ ["Python docs","https://docs.python.org/3/","Official Python reference and tutorial","Docs",["py"]],
+ ["Python Tutor","https://pythontutor.com/","See your code run step by step","Tools",["py","ns"]],
+ ["Stack Overflow","https://stackoverflow.com/","Answers to almost every coding error","Tools",["all"]],
+ ["GitHub","https://github.com/","Save your code and show your projects","Tools",["all"]],
+ ["CodePen","https://codepen.io/","Try HTML, CSS and JS right in the browser","Tools",["web"]]
+];

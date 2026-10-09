@@ -123,17 +123,32 @@
 </div>
 
 <div id="p-coding" class="panel" role="tabpanel" hidden>
+ <div class="tiles ctiles" id="ctiles"></div>
  <div class="cols">
   <div class="col">
    <div class="card fc-keep"><div class="ch2"><span class="ci"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5M13.5 4l-3 16"/></svg></span><div class="ct2"><h2>Coding practice</h2></div><span class="streak" id="sk-coding"></span></div>
     <div class="prog"><span class="mute" id="pc-coding"></span><div class="bar"><i id="pb-coding"></i></div></div><div id="tk-coding"></div></div>
+   <div class="card"><div class="ch2"><span class="ci"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg></span><div class="ct2"><h2>Today's coding drill</h2><p class="mute">A small skill to practice today.</p></div></div><div id="cdt" class="dg"></div>
+    <div class="row"><button id="cdd" class="pri">I did this</button><button id="cdn">Another drill</button></div>
+    <details class="tv"><summary>All coding drills</summary><div id="cda"></div></details></div>
    <div class="card"><div class="ch2"><span class="ci"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5a2 2 0 0 1 2-2h14v16H6a2 2 0 0 0-2 2zM4 5v16M8 7h8"/></svg></span><div class="ct2"><h2>Learning log</h2><p class="mute">What did you learn or build today?</p></div></div>
     <div class="inrow"><input type="text" id="tx" placeholder="Example: finished CS50 week 1" aria-label="What you learned"><button id="ta" class="pri">Add</button></div><ul id="tl" class="tlog"></ul></div>
   </div>
   <div class="col side">
+   <div class="card"><div class="ch2"><span class="ci"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M9 2h6"/></svg></span><div class="ct2"><h2>Focus session</h2><p class="mute">Code with no distractions. Minutes count toward your week.</p></div></div>
+    <div class="tring code" id="cring"><svg viewBox="0 0 120 120"><circle class="rt" cx="60" cy="60" r="54"/><circle class="rv" id="crv" cx="60" cy="60" r="54"/></svg><div class="timer" id="ctm">25:00</div></div>
+    <div class="chips center" id="cpre" role="group" aria-label="Session length"><button data-m="25">25 min</button><button data-m="45">45 min</button><button data-m="60">60 min</button></div>
+    <div class="row"><button id="cts" class="pri">Start</button><button id="ctr">Stop</button></div>
+    <div class="snights cmins" id="cmins" aria-hidden="true"></div>
+    <p class="mute center" id="cmt" style="margin:8px 0 0"></p></div>
    <div class="card idea"><div class="ch2"><span class="ci"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2V16h5v-.1c0-.8.4-1.5 1-2A6 6 0 0 0 12 3z"/></svg></span><div class="ct2"><h2>Today's project idea</h2></div><span class="pill" id="pil"></span></div>
     <p class="pit" id="pit"></p><p class="mute" id="pid" style="margin:6px 0 0"></p>
     <div class="row"><button id="pib" class="pri">I built this</button><button id="pin">Another idea</button></div></div>
+   <div class="card ctip"><div class="ch2"><span class="ci"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l2.4 6.9H22l-6 4.6 2.3 7L12 16.2 5.7 20.5 8 13.5 2 8.9h7.6z"/></svg></span><div class="ct2"><h2>Tip of the day</h2></div></div>
+    <p class="ctt" id="ctt"></p><div class="row sm"><button id="ctn" class="ghost">Next tip</button></div></div>
+   <div class="card"><div class="ch2"><span class="ci"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1M14 10a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></svg></span><div class="ct2"><h2>Helpful sites</h2><p class="mute" id="csp">Free places to learn, practice and get unstuck.</p></div></div>
+    <div id="csl"></div>
+    <details class="tv"><summary>More sites</summary><div id="csm"></div></details></div>
   </div>
  </div>
 </div>
@@ -166,6 +181,7 @@
 <script src="../script.js"></script>
 <script src="../content.js"></script>
 <script src="../extras.js"></script>
+<script src="../coding.js"></script>
 <script src="../home.js"></script>
 <script type="module" src="../sync.js"></script>
 <script type="module" src="../remote.js"></script>
