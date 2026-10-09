@@ -258,4 +258,24 @@
   });
 
   overview();
+
+  // ---------- Share today's checklists with the Windows app ----------
+  // The Windows app reads st.lists, so it shows the same tasks as the website.
+  // Saved only when something changed, so it doesn't cause extra syncing.
+  function snapshotLists() {
+    try {
+      var fd = st.fd || [0, 1, 2], days = [0, 1, 2, 3, 4, 5, 6], keepW = W, out = { v: 1, gaming: {}, sleep: TK("sleep"), coding: TK("coding") };
+      var fullDay = days.filter(function (x) { return fd.indexOf(x) > -1; })[0], shortDay = days.filter(function (x) { return fd.indexOf(x) < 0; })[0];
+      if (fullDay != null) { W = fullDay; build(); out.gaming.full = TK("gaming"); }
+      if (shortDay != null) { W = shortDay; build(); out.gaming.short = TK("gaming"); }
+      W = keepW; build();
+      out.fd = fd.slice();
+      if (JSON.stringify(out) !== JSON.stringify(st.lists)) { st.lists = out; save(); }
+    } catch (e) {}
+  }
+  snapshotLists();
+  var baseFin = fin;
+  fin = function (c, keep) { baseFin(c, keep); snapshotLists(); };
+  var baseMove = move;
+  move = function (c, a, b) { baseMove(c, a, b); snapshotLists(); };
 })();
